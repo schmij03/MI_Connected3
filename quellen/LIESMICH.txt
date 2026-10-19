@@ -1,0 +1,2 @@
+Hier liegen die Original-PowerPoint-Dateien (.pptx).
+Neue Dateien nach dem Schema MI_K1_L3_Kurztitel.pptx benennen, dann wandelt der Workflow sie automatisch um.

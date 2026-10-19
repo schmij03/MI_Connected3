@@ -1,0 +1,8 @@
+node_modules/
+build/
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+Thumbs.db
+~$*.pptx

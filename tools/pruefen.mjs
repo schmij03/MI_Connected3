@@ -1,0 +1,181 @@
+#!/usr/bin/env node
+/*
+ * Prueft die gebaute Seite (build/site) automatisch im Browser:
+ * Anmeldung, Startseite, jede Praesentation, Downloads und Referentenansicht.
+ *
+ * Aufruf: SITE_PASSWORT=geheim node tools/pruefen.mjs [--bilder ordner]
+ *   --bilder  speichert Bildschirmfotos aller Folien in diesem Ordner
+ */
+import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
+import { chromium } from "playwright";
+import { WURZEL } from "./lib/inhalte.mjs";
+
+const ORDNER = path.join(WURZEL, "build", "site");
+const args = process.argv.slice(2);
+let passwort = process.env.SITE_PASSWORT || "";
+let bilderOrdner = null;
+for (let i = 0; i < args.length; i++) {
+  if (args[i] === "--passwort") passwort = args[++i];
+  else if (args[i] === "--bilder") bilderOrdner = path.resolve(args[++i]);
+}
+if (!passwort) {
+  console.error("Passwort fehlt (SITE_PASSWORT oder --passwort).");
+  process.exit(1);
+}
+
+const TYPEN = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".woff2": "font/woff2" };
+const server = http.createServer((anfrage, antwort) => {
+  let pfad = decodeURIComponent(new URL(anfrage.url, "http://x").pathname);
+  if (pfad.endsWith("/")) pfad += "index.html";
+  const datei = path.join(ORDNER, path.normalize(pfad));
+  if (!datei.startsWith(ORDNER) || !fs.existsSync(datei) || !fs.statSync(datei).isFile()) {
+    antwort.writeHead(404);
+    antwort.end();
+    return;
+  }
+  antwort.writeHead(200, { "Content-Type": TYPEN[path.extname(datei)] || "application/octet-stream" });
+  fs.createReadStream(datei).pipe(antwort);
+});
+await new Promise((ok) => server.listen(0, ok));
+const BASIS = `http://localhost:${server.address().port}/`;
+
+let fehler = 0;
+function pruefe(bedingung, text) {
+  console.log((bedingung ? "  ok    " : "  FEHLER ") + text);
+  if (!bedingung) fehler++;
+}
+
+const browser = await chromium.launch(process.env.CHROMIUM_PFAD ? { executablePath: process.env.CHROMIUM_PFAD } : {});
+const kontext = await browser.newContext({ viewport: { width: 1280, height: 800 }, acceptDownloads: true });
+const seite = await kontext.newPage();
+const seitenFehler = [];
+seite.on("pageerror", (e) => seitenFehler.push(e.message));
+
+try {
+  console.log("Anmeldung");
+  await seite.goto(BASIS + "start.html");
+  await seite.waitForURL(/index\.html/);
+  pruefe(true, "Startseite leitet ohne Anmeldung zur Anmeldeseite");
+  const robots = await (await fetch(BASIS + "robots.txt")).text();
+  pruefe(/Disallow: \//.test(robots), "robots.txt sperrt Suchmaschinen");
+  pruefe((await seite.locator('meta[name="robots"]').getAttribute("content")).includes("noindex"), "noindex gesetzt");
+
+  await seite.fill("#passwort", passwort + "-falsch");
+  await seite.click("button[type=submit]");
+  await seite.waitForSelector(".meldung.fehler", { timeout: 20000 });
+  pruefe(/stimmt nicht/.test(await seite.textContent("#meldung")), "Falsches Passwort wird abgelehnt");
+
+  await seite.fill("#passwort", passwort);
+  await seite.click("button[type=submit]");
+  await seite.waitForURL(/start\.html/, { timeout: 20000 });
+  await seite.waitForSelector(".kapitel", { timeout: 20000 });
+  pruefe(true, "Richtiges Passwort fuehrt zur Startseite");
+
+  console.log("Startseite");
+  const kapitel = await seite.locator(".kapitel").count();
+  const karten = await seite.locator(".lektion").count();
+  pruefe(kapitel > 0, `${kapitel} Kapitel sichtbar`);
+  pruefe(karten > 0, `${karten} Praesentation(en) sichtbar`);
+  const leer = await seite.locator(".kapitel-leer").count();
+  console.log(`        ${leer} Kapitel mit Hinweis «Noch keine Präsentation»`);
+
+  // Suche
+  const ersteTitel = (await seite.locator(".lektion h3").first().textContent()).trim();
+  await seite.fill("#suche", ersteTitel.split(" ")[0]);
+  pruefe((await seite.locator(".lektion:not([hidden])").count()) >= 1, "Suche findet die erste Praesentation");
+  await seite.fill("#suche", "xyzxyz-gibt-es-nicht");
+  pruefe(await seite.locator("#kein-treffer").isVisible(), "Suche ohne Treffer zeigt Hinweis");
+  await seite.fill("#suche", "");
+
+  // Download von der Startseite
+  const [download] = await Promise.all([
+    seite.waitForEvent("download", { timeout: 30000 }),
+    seite.locator(".lektion").first().getByRole("button", { name: "PDF", exact: true }).click()
+  ]);
+  const ziel = path.join(WURZEL, "build", "pruefung-download.pdf");
+  await download.saveAs(ziel);
+  const kopf = fs.readFileSync(ziel).subarray(0, 5).toString();
+  pruefe(kopf === "%PDF-", `PDF-Download entschluesselt (${download.suggestedFilename()})`);
+  pruefe(/^MI_[A-Za-z0-9_]+\.pdf$/.test(download.suggestedFilename()), "Dateiname nach Schema MI_<Kapitel>_<Lektion>_<Kurztitel>");
+
+  console.log("Praesentationen");
+  const links = await seite.$$eval(".lektion .knopf-haupt", (a) => a.map((x) => x.getAttribute("href")));
+  for (const link of links) {
+    seitenFehler.length = 0;
+    await seite.goto(BASIS + link);
+    await seite.waitForFunction(() => window.Reveal && Reveal.isReady(), null, { timeout: 30000 });
+    const anzahl = await seite.evaluate(() => Reveal.getTotalSlides());
+    pruefe(anzahl > 0 && seitenFehler.length === 0, `${link}: ${anzahl} Folien, keine Fehler ${seitenFehler.join(" ")}`);
+    const bilderKaputt = await seite.$$eval(".reveal .slides img", (bilder) => bilder.filter((b) => b.complete && b.naturalWidth === 0).length);
+    pruefe(bilderKaputt === 0, `${link}: alle Bilder geladen`);
+    if (bilderOrdner) {
+      const name = link.replace(/^.*p=/, "").replace(/[^a-z0-9]+/gi, "_");
+      fs.mkdirSync(bilderOrdner, { recursive: true });
+      for (let i = 0; i < anzahl; i++) {
+        await seite.evaluate((n) => Reveal.slide(n), i);
+        await seite.waitForTimeout(450);
+        await seite.screenshot({ path: path.join(bilderOrdner, `${name}_${String(i + 1).padStart(2, "0")}.png`) });
+      }
+    }
+  }
+
+  console.log("Bedienung");
+  await seite.goto(BASIS + links[0]);
+  await seite.waitForFunction(() => window.Reveal && Reveal.isReady());
+  const zeitFolie = await seite.evaluate(() => {
+    const folien = Reveal.getSlides();
+    return folien.findIndex((f) => f.hasAttribute("data-zeit"));
+  });
+  if (zeitFolie >= 0) {
+    await seite.evaluate((n) => Reveal.slide(n), zeitFolie);
+    await seite.keyboard.press("t");
+    await seite.waitForTimeout(1200);
+    pruefe(await seite.locator(".mi-countdown").isVisible(), "Countdown startet mit T");
+    await seite.keyboard.press("Shift+T");
+  }
+  await seite.keyboard.press("d");
+  pruefe(await seite.locator(".mi-leiste.offen").isVisible(), "Download-Leiste mit D");
+  await seite.keyboard.press("b");
+  pruefe(await seite.evaluate(() => Reveal.isPaused()), "Bildschirm schwarz mit B");
+  await seite.keyboard.press("b");
+  await seite.keyboard.press("Escape");
+  pruefe(await seite.evaluate(() => Reveal.isOverview()), "Folienuebersicht mit Esc");
+  await seite.keyboard.press("Escape");
+
+  console.log("Referentenansicht");
+  await seite.goto(BASIS + links[0] + "&referent=1");
+  await seite.waitForSelector(".mi-dialog button.haupt");
+  const [fenster] = await Promise.all([kontext.waitForEvent("page"), seite.click(".mi-dialog button.haupt")]);
+  await fenster.waitForSelector("#current-slide iframe", { timeout: 20000 });
+  const rahmen = fenster.frames().find((f) => /receiver/.test(f.url()));
+  await rahmen.waitForFunction(() => window.Reveal && Reveal.isReady(), null, { timeout: 30000 });
+  pruefe(true, "Referentenansicht zeigt die aktuelle Folie");
+  await seite.keyboard.press("ArrowRight");
+  await fenster.waitForTimeout(800);
+  const notizen = await fenster.textContent(".speaker-controls-notes");
+  pruefe(notizen !== null, "Notizenbereich vorhanden");
+  if (bilderOrdner) await fenster.screenshot({ path: path.join(bilderOrdner, "referentenansicht.png") });
+  await fenster.close();
+
+  console.log("Abmelden");
+  await seite.goto(BASIS + "start.html");
+  await seite.click("#abmelden");
+  await seite.waitForURL(/index\.html/);
+  await seite.goto(BASIS + links[0]);
+  await seite.waitForURL(/index\.html/);
+  pruefe(true, "Nach dem Abmelden ist keine Praesentation mehr erreichbar");
+} catch (e) {
+  fehler++;
+  console.error("  FEHLER " + e.message);
+} finally {
+  await browser.close();
+  server.close();
+}
+
+if (fehler) {
+  console.error(`\n${fehler} Pruefung(en) fehlgeschlagen.`);
+  process.exit(1);
+}
+console.log("\nAlle Pruefungen bestanden.");

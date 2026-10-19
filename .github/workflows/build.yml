@@ -1,0 +1,101 @@
+# Baut alle Praesentationen, verschluesselt sie und veroeffentlicht das Ergebnis
+# im oeffentlichen Pages-Repository (z. B. schmij03/mi-praesentationen).
+#
+# Benoetigt im Quell-Repository (Settings > Secrets and variables > Actions):
+#   Secret   SITE_PASSWORT     Passwort fuer die Website
+#   Secret   PAGES_DEPLOY_KEY  privater Teil des Deploy Keys (Schreibrecht im Pages-Repository)
+#   Variable PAGES_REPOSITORY  optional, Standard: <eigener Benutzer>/mi-praesentationen
+name: Website bauen
+
+on:
+  push:
+    branches: ["**"]
+    paths-ignore:
+      - "README.md"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: website-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SITE_PASSWORT: ${{ secrets.SITE_PASSWORT }}
+      VEROEFFENTLICHEN: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Python-Pakete installieren
+        run: pip install -r requirements.txt
+
+      - name: Konverter testen
+        run: python -m unittest discover tools/tests
+
+      - name: Neue PowerPoint-Dateien in quellen/ umwandeln
+        run: python tools/neue_quellen.py
+
+      - name: Umgewandelte Dateien speichern
+        if: env.VEROEFFENTLICHEN == 'true'
+        run: |
+          if [ -n "$(git status --porcelain inhalte/)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add inhalte/
+            git commit -m "Neue PowerPoint-Dateien automatisch umgewandelt [skip ci]"
+            git push
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Node-Pakete und Chromium installieren
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Passwort pruefen
+        run: |
+          if [ -z "$SITE_PASSWORT" ]; then
+            echo "::error::Das Secret SITE_PASSWORT fehlt. Anleitung: README.md, Abschnitt Einrichtung."
+            exit 1
+          fi
+
+      - name: Website bauen (Exporte und Verschluesselung)
+        run: node tools/build.mjs
+
+      - name: Website im Browser pruefen
+        run: node tools/pruefen.mjs
+
+      - name: Exporte als Artefakt ablegen (nur fuer dich sichtbar)
+        uses: actions/upload-artifact@v4
+        with:
+          name: exporte
+          path: build/exporte
+          retention-days: 7
+
+      - name: Ins Pages-Repository uebertragen
+        if: env.VEROEFFENTLICHEN == 'true'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          deploy_key: ${{ secrets.PAGES_DEPLOY_KEY }}
+          external_repository: ${{ vars.PAGES_REPOSITORY || format('{0}/mi-praesentationen', github.repository_owner) }}
+          publish_branch: main
+          publish_dir: build/site
+          force_orphan: true
+          enable_jekyll: false
+          user_name: "github-actions[bot]"
+          user_email: "41898282+github-actions[bot]@users.noreply.github.com"
+          commit_message: "Website aktualisiert"

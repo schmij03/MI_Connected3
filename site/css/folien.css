@@ -1,0 +1,785 @@
+/*
+ * Folien-Design fuer reveal.js (16:9, 1280 x 720 Bildpunkte).
+ * Setzt basis.css voraus (Farben und Schrift).
+ *
+ * Layouts (im Markdown mit <!-- .slide: class="..." -->):
+ *   titel, auftrag, loesung, merke, karten
+ * Zusaetzlich: data-zeit="7" ergibt den Zeitbadge oben rechts,
+ * ein Zitat (> ...) wird zum Hinweiskasten unten.
+ */
+
+.reveal-viewport {
+  background: #ffffff;
+}
+
+.reveal {
+  font-family: var(--schrift);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--text);
+}
+
+.reveal ::selection {
+  background: rgba(237, 125, 49, 0.35);
+}
+
+.reveal .slides {
+  text-align: left;
+}
+
+.reveal .slides > section,
+.reveal .slides > section > section {
+  height: 100%;
+  padding: 44px 64px 40px;
+  box-sizing: border-box;
+}
+
+.reveal .slides section > :first-child {
+  margin-top: 0;
+}
+
+/* Ueberschriften */
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4 {
+  margin: 0 0 22px;
+  font-family: var(--schrift);
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--petrol);
+  text-transform: none;
+  letter-spacing: normal;
+  text-shadow: none;
+  word-wrap: break-word;
+}
+.reveal h1 {
+  font-size: 58px;
+}
+.reveal h2 {
+  font-size: 44px;
+  padding-right: 120px;
+}
+.reveal h2::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 5px;
+  margin-top: 12px;
+  border-radius: 3px;
+  background: var(--orange);
+}
+.reveal h3 {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+.reveal h4 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  color: var(--dunkelblau);
+}
+
+/* Fliesstext und Listen */
+.reveal p {
+  margin: 0 0 16px;
+}
+.reveal strong,
+.reveal b {
+  font-weight: 700;
+}
+.reveal em {
+  font-style: italic;
+}
+.reveal a {
+  color: var(--petrol);
+  text-decoration: underline;
+}
+.reveal ul,
+.reveal ol {
+  display: block;
+  margin: 0 0 16px;
+  padding-left: 1.3em;
+}
+.reveal ul {
+  list-style: none;
+}
+.reveal ul > li {
+  position: relative;
+}
+.reveal ul > li::before {
+  content: "";
+  position: absolute;
+  left: -1.05em;
+  top: 0.5em;
+  width: 0.36em;
+  height: 0.36em;
+  border-radius: 2px;
+  background: var(--orange);
+}
+.reveal ul ul > li::before {
+  background: transparent;
+  border: 2px solid var(--petrol);
+  border-radius: 50%;
+  width: 0.3em;
+  height: 0.3em;
+}
+.reveal ol > li::marker {
+  color: var(--orange);
+  font-weight: 700;
+}
+.reveal li {
+  margin: 0 0 10px;
+}
+.reveal li > ul,
+.reveal li > ol {
+  margin: 8px 0 0;
+  font-size: 0.9em;
+}
+
+/* Tabellen */
+.reveal table {
+  margin: 8px 0 18px;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 24px;
+  width: 100%;
+}
+.reveal table th,
+.reveal table td {
+  padding: 10px 14px;
+  border: 1px solid var(--grau);
+  text-align: left;
+  vertical-align: top;
+}
+.reveal table th {
+  background: var(--petrol);
+  color: var(--weiss);
+  font-weight: 700;
+}
+.reveal table tr:nth-child(even) td {
+  background: var(--hellgrau);
+}
+
+/* Bilder */
+.reveal img {
+  max-width: 100%;
+  max-height: 470px;
+  margin: 0;
+  border-radius: 6px;
+}
+.reveal p.nur-bild {
+  text-align: center;
+}
+.reveal .bilder-reihe {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  align-items: flex-start;
+}
+.reveal .bilder-reihe img {
+  min-width: 0;
+  max-height: 400px;
+}
+
+/* Spalten aus zwei Bloecken, die das Skript bildet (Text links, Bild rechts) */
+.reveal .zwei-spalten {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 36px;
+  align-items: start;
+}
+
+/* Hinweiskasten unten (Markdown-Zitat) */
+.reveal blockquote {
+  position: absolute;
+  left: 64px;
+  right: 64px;
+  bottom: 34px;
+  width: auto;
+  margin: 0;
+  padding: 14px 20px 14px 64px;
+  border-radius: var(--radius);
+  border-left: 8px solid var(--orange);
+  background: var(--hellgrau);
+  box-shadow: none;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1.3;
+  text-align: left;
+  quotes: none;
+}
+.reveal blockquote::before {
+  content: "i";
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--weiss);
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 32px;
+  text-align: center;
+  font-family: Georgia, serif;
+  font-style: italic;
+}
+.reveal blockquote p {
+  margin: 0 0 6px;
+}
+.reveal blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Zeitbadge oben rechts */
+.reveal .zeit-badge {
+  position: absolute;
+  top: 34px;
+  right: 40px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px 6px 12px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: var(--weiss);
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+}
+.reveal .zeit-badge svg {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+
+/* Nummernkreis (Titelfolie) */
+.reveal .nummer-kreis {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--weiss);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  line-height: 1;
+}
+.reveal .nummer-kreis .nummer-wort {
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.reveal .nummer-kreis .nummer-zahl {
+  font-size: 72px;
+}
+
+/* ---------- Layout: titel ---------- */
+.reveal .slides section.titel {
+  display: grid !important;
+  grid-template-columns: 170px 1fr;
+  column-gap: 48px;
+  align-content: center;
+  align-items: center;
+  padding: 60px 90px;
+  color: var(--weiss);
+}
+.reveal .slides section.titel .titel-text {
+  min-width: 0;
+}
+.reveal .slides section.titel h1,
+.reveal .slides section.titel h2 {
+  color: var(--weiss);
+  font-size: 60px;
+  padding-right: 0;
+  margin-bottom: 18px;
+}
+.reveal .slides section.titel h2::after {
+  display: none;
+}
+.reveal .slides section.titel p,
+.reveal .slides section.titel li {
+  font-size: 32px;
+  color: #dbe3f0;
+}
+.reveal .slides section.titel p:first-of-type {
+  font-size: 36px;
+  color: var(--weiss);
+}
+.reveal .slides section.titel .titel-fuss {
+  position: absolute;
+  left: 90px;
+  right: 90px;
+  bottom: 40px;
+  padding-top: 14px;
+  border-top: 2px solid rgba(255, 255, 255, 0.25);
+  font-size: 24px;
+  color: #c5d0e3;
+}
+.reveal .slides section.titel.ohne-nummer {
+  grid-template-columns: 1fr;
+}
+.reveal .slides section.titel img {
+  max-height: 300px;
+}
+
+/* ---------- Layout: merke ---------- */
+.reveal .slides section.merke {
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px 120px;
+  color: var(--weiss);
+  text-align: center;
+}
+.reveal .slides section.merke .merke-marke {
+  align-self: center;
+  margin-bottom: 26px;
+  padding: 6px 22px;
+  border-radius: 999px;
+  background: var(--orange);
+  color: var(--weiss);
+  font-weight: 700;
+  font-size: 24px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.reveal .slides section.merke h1,
+.reveal .slides section.merke h2,
+.reveal .slides section.merke h3 {
+  color: var(--weiss);
+  padding-right: 0;
+}
+.reveal .slides section.merke h2::after {
+  margin-left: auto;
+  margin-right: auto;
+}
+.reveal .slides section.merke p,
+.reveal .slides section.merke li {
+  font-size: 38px;
+  line-height: 1.35;
+}
+.reveal .slides section.merke ul,
+.reveal .slides section.merke ol {
+  text-align: left;
+  align-self: center;
+}
+.reveal .slides section.merke strong {
+  color: #ffc59b;
+}
+.reveal .slides section.merke blockquote {
+  color: var(--text);
+}
+
+/* ---------- Layout: loesung ---------- */
+.reveal .slides section.loesung {
+  border-left: 14px solid var(--gruen);
+}
+.reveal .slides section.loesung .loesung-band {
+  position: absolute;
+  top: 0;
+  right: 220px;
+  padding: 8px 22px 10px;
+  border-radius: 0 0 10px 10px;
+  background: var(--gruen);
+  color: var(--weiss);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.reveal .slides section.loesung:not([data-zeit]) .loesung-band {
+  right: 40px;
+}
+.reveal .slides section.loesung h2::after {
+  background: var(--gruen);
+}
+.reveal .slides section.loesung table th {
+  background: var(--gruen);
+}
+.reveal .slides section.loesung table tr:nth-child(even) td {
+  background: var(--gruen-hell);
+}
+
+/* ---------- Layout: karten ---------- */
+.reveal .karten-reihe {
+  display: grid;
+  grid-template-columns: repeat(var(--anzahl, 3), minmax(0, 1fr));
+  gap: 24px;
+  align-items: stretch;
+}
+.reveal .karte {
+  padding: 20px 22px;
+  border-radius: var(--radius);
+  border-top: 7px solid var(--orange);
+  background: var(--hellgrau);
+  font-size: 25px;
+  min-width: 0;
+}
+.reveal .karte h3 {
+  font-size: 30px;
+}
+.reveal .karte ul,
+.reveal .karte ol,
+.reveal .karte p {
+  margin-bottom: 8px;
+}
+.reveal .karte li {
+  margin-bottom: 6px;
+}
+.reveal .karte img {
+  max-height: 200px;
+  display: block;
+  margin: 8px auto 0;
+}
+.reveal .karten-reihe[style*="--anzahl: 4"] .karte {
+  font-size: 24px;
+  padding: 18px;
+}
+.reveal .karten-reihe[style*="--anzahl: 4"] .karte h3 {
+  font-size: 27px;
+}
+
+/* ---------- Layout: auftrag ---------- */
+.reveal .slides section.auftrag {
+  display: grid !important;
+  grid-template-columns: 330px 1fr;
+  padding: 0;
+}
+.reveal .auftrag-seite {
+  background: var(--dunkelblau);
+  color: var(--weiss);
+  padding: 44px 30px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  font-size: 24px;
+}
+.reveal .auftrag-seite .auftrag-marke {
+  align-self: flex-start;
+  padding: 6px 18px;
+  border-radius: 999px;
+  background: var(--orange);
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.reveal .auftrag-seite dl {
+  margin: 0;
+  display: grid;
+  gap: 16px;
+}
+.reveal .auftrag-seite dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ffc59b;
+}
+.reveal .auftrag-seite dt svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.reveal .auftrag-seite dd {
+  margin: 2px 0 0;
+  font-size: 25px;
+  line-height: 1.25;
+}
+.reveal .auftrag-haupt {
+  position: relative;
+  padding: 44px 56px 40px 48px;
+  min-width: 0;
+}
+.reveal .auftrag-haupt ol > li {
+  margin-bottom: 14px;
+}
+.reveal .slides section.auftrag blockquote {
+  left: 378px;
+  right: 56px;
+}
+.reveal .slides section.auftrag.loesung {
+  border-left: 0;
+}
+
+/* Fragmente ruhig einblenden */
+.reveal .slides section .fragment {
+  transition: opacity 0.3s ease;
+}
+
+/* Fortschrittsbalken und Foliennummer */
+.reveal .progress {
+  color: var(--orange);
+  height: 4px;
+}
+.reveal .slide-number {
+  right: 14px;
+  bottom: 10px;
+  background: transparent;
+  color: var(--text-leise);
+  font-family: var(--schrift);
+  font-size: 15px;
+}
+.reveal .controls {
+  color: var(--petrol);
+}
+
+/* ---------- Countdown ---------- */
+.mi-countdown {
+  position: fixed;
+  right: 22px;
+  bottom: 44px;
+  z-index: 40;
+  min-width: 190px;
+  padding: 12px 18px 14px;
+  border-radius: 14px;
+  background: var(--dunkelblau);
+  color: var(--weiss);
+  font-family: var(--schrift);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  user-select: none;
+}
+.mi-countdown[hidden] {
+  display: none;
+}
+.mi-countdown .zeit {
+  font-size: 54px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.mi-countdown .balken {
+  height: 6px;
+  margin: 10px 0 8px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+}
+.mi-countdown .balken span {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--orange);
+  transition: width 0.5s linear;
+}
+.mi-countdown .hilfe {
+  font-size: 14px;
+  opacity: 0.75;
+}
+.mi-countdown.pausiert .zeit {
+  opacity: 0.6;
+}
+.mi-countdown.abgelaufen {
+  background: var(--orange);
+  animation: mi-blinken 1s ease-in-out 3;
+}
+.mi-countdown.abgelaufen .balken span {
+  background: var(--weiss);
+}
+@keyframes mi-blinken {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+/* ---------- Download-Leiste ---------- */
+.mi-leiste {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--schrift);
+  font-size: 15px;
+}
+.mi-leiste button,
+.mi-leiste a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 5px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+.mi-leiste button:hover,
+.mi-leiste a:hover {
+  background: var(--weiss);
+  border-color: var(--orange);
+}
+.mi-leiste .mi-leiste-schalter {
+  width: 34px;
+  padding: 0;
+  justify-content: center;
+  opacity: 0.55;
+}
+.mi-leiste:hover .mi-leiste-schalter,
+.mi-leiste.offen .mi-leiste-schalter {
+  opacity: 1;
+}
+.mi-leiste .mi-leiste-inhalt {
+  display: none;
+  gap: 6px;
+}
+.mi-leiste.offen .mi-leiste-inhalt {
+  display: flex;
+}
+.mi-leiste svg {
+  width: 16px;
+  height: 16px;
+}
+.mi-leiste .laedt {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* ---------- Hinweisfenster (Referentenansicht, Fehler) ---------- */
+.mi-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(23, 42, 75, 0.55);
+  font-family: var(--schrift);
+}
+.mi-dialog[hidden] {
+  display: none;
+}
+.mi-dialog-karte {
+  max-width: 480px;
+  padding: 26px 28px;
+  border-radius: 14px;
+  border-top: 6px solid var(--orange);
+  background: var(--weiss);
+  color: var(--text);
+  font-size: 18px;
+  line-height: 1.45;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+.mi-dialog-karte h2 {
+  margin: 0 0 8px;
+  color: var(--petrol);
+  font-size: 24px;
+}
+.mi-dialog-karte p {
+  margin: 0 0 16px;
+}
+.mi-dialog-karte .knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.mi-dialog-karte button,
+.mi-dialog-karte a {
+  min-height: 42px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--grau);
+  background: var(--weiss);
+  color: var(--text);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.mi-dialog-karte .haupt {
+  background: var(--petrol);
+  border-color: var(--petrol);
+  color: var(--weiss);
+  font-weight: 700;
+}
+kbd {
+  display: inline-block;
+  min-width: 1.6em;
+  padding: 0 6px;
+  border: 1px solid #bfbfbf;
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--hellgrau);
+  font-family: var(--schrift);
+  font-size: 0.9em;
+  text-align: center;
+}
+
+/* In der Referentenansicht (Vorschau-Rahmen) und im Druck keine Bedienelemente */
+.mi-empfaenger .mi-leiste,
+.mi-empfaenger .mi-countdown,
+.mi-empfaenger .mi-dialog,
+html.print-pdf .mi-leiste,
+html.print-pdf .mi-countdown,
+html.print-pdf .mi-dialog {
+  display: none !important;
+}
+
+/* ---------- Druck / PDF ---------- */
+/* reveal.js setzt im Druck Abstand und Anzeige aller Folien zurueck. Hier wieder herstellen. */
+html.reveal-print .reveal .slides section:not(.stack) {
+  height: 720px !important;
+  padding: 44px 64px 40px !important;
+}
+html.reveal-print .reveal .slides section.titel {
+  display: grid !important;
+  padding: 60px 90px !important;
+}
+html.reveal-print .reveal .slides section.merke {
+  display: flex !important;
+  padding: 60px 120px !important;
+}
+html.reveal-print .reveal .slides section.auftrag {
+  display: grid !important;
+  padding: 0 !important;
+}
+html.print-pdf .reveal .speaker-notes-pdf {
+  font-family: var(--schrift);
+  font-size: 24px;
+  line-height: 1.4;
+  color: var(--text);
+  background: var(--weiss);
+}
+html.print-pdf .reveal .speaker-notes-pdf[data-layout="separate-page"] {
+  padding: 50px 70px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  box-sizing: border-box;
+  border-top: 10px solid var(--orange);
+}
+html.print-pdf .reveal .speaker-notes-pdf[data-layout="separate-page"]::before {
+  content: "Notizen";
+  display: block;
+  margin-bottom: 18px;
+  color: var(--petrol);
+  font-size: 34px;
+  font-weight: 700;
+}
+html.print-pdf .reveal .speaker-notes-pdf p {
+  margin: 0 0 12px;
+}

@@ -1,0 +1,60 @@
+{
+  "kapitel": [
+    {
+      "id": "einfuehrung",
+      "kuerzel": "Einfuehrung",
+      "titel": "Einführung (Woche 1 und 2: Microsoft 365, Teams, OneDrive)",
+      "lektionen": []
+    },
+    {
+      "id": "k1",
+      "kuerzel": "K1",
+      "titel": "Kapitel 1: Eine Entdeckungsreise durch das Internet",
+      "lektionen": []
+    },
+    {
+      "id": "k2",
+      "kuerzel": "K2",
+      "titel": "Kapitel 2: Digitale Geräte im Alltag",
+      "lektionen": []
+    },
+    {
+      "id": "k3",
+      "kuerzel": "K3",
+      "titel": "Kapitel 3: Abheben mit Algorithmen",
+      "lektionen": []
+    },
+    {
+      "id": "k4",
+      "kuerzel": "K4",
+      "titel": "Kapitel 4: Das passt ins Bild",
+      "lektionen": []
+    },
+    {
+      "id": "k5",
+      "kuerzel": "K5",
+      "titel": "Kapitel 5: Daten, Daten, Daten",
+      "lektionen": []
+    },
+    {
+      "id": "word",
+      "kuerzel": "Word",
+      "titel": "Word (Textverarbeitung)",
+      "lektionen": []
+    },
+    {
+      "id": "vorlagen",
+      "kuerzel": "Vorlage",
+      "titel": "Vorlagen",
+      "lektionen": [
+        {
+          "id": "muster",
+          "titel": "Musterpräsentation",
+          "untertitel": "Alle Folienlayouts auf einen Blick",
+          "kurztitel": "Musterpraesentation",
+          "datei": "vorlagen/muster.md"
+        }
+      ]
+    }
+  ]
+}

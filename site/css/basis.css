@@ -1,0 +1,444 @@
+/*
+ * Gemeinsame Grundlagen: Farben, Schrift und die Oberflaeche von
+ * Anmeldeseite und Startseite. Die Farben stammen aus den PowerPoint-Vorlagen
+ * (Designfarben des Folienmasters, siehe README, Abschnitt "Farben").
+ */
+
+@font-face {
+  font-family: "Carlito";
+  src: url("../fonts/carlito-latin-400-normal.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Carlito";
+  src: url("../fonts/carlito-latin-400-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Carlito";
+  src: url("../fonts/carlito-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Carlito";
+  src: url("../fonts/carlito-latin-700-italic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --dunkelblau: #1f3864;
+  --dunkelblau-tief: #172a4b;
+  --petrol: #1b6b73;
+  --petrol-hell: #e3f0f1;
+  --orange: #ed7d31;
+  --orange-dunkel: #c55a11;
+  --hellgrau: #f2f2f2;
+  --grau: #d9d9d9;
+  --text: #262626;
+  --text-leise: #595959;
+  --gruen: #2e7d32;
+  --gruen-hell: #e7f3e8;
+  --weiss: #ffffff;
+  --schrift: "Calibri", "Carlito", "Lato", "Segoe UI", Arial, sans-serif;
+  --radius: 10px;
+  --schatten: 0 1px 3px rgba(23, 42, 75, 0.12), 0 4px 14px rgba(23, 42, 75, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body.oberflaeche {
+  margin: 0;
+  font-family: var(--schrift);
+  font-size: 17px;
+  line-height: 1.45;
+  color: var(--text);
+  background: #f7f8fa;
+}
+
+.oberflaeche a:not(.knopf) {
+  color: var(--petrol);
+}
+
+.oberflaeche button,
+.oberflaeche .knopf,
+.oberflaeche input,
+.oberflaeche select {
+  font: inherit;
+}
+
+/* Knoepfe */
+.knopf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--grau);
+  border-radius: 8px;
+  background: var(--weiss);
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+.knopf:hover {
+  background: var(--hellgrau);
+  border-color: #bfbfbf;
+}
+.knopf:focus-visible,
+.oberflaeche input:focus-visible,
+.oberflaeche select:focus-visible {
+  outline: 3px solid rgba(237, 125, 49, 0.55);
+  outline-offset: 1px;
+}
+.knopf[disabled],
+.knopf.laedt {
+  opacity: 0.6;
+  cursor: progress;
+}
+.knopf-haupt {
+  background: var(--petrol);
+  border-color: var(--petrol);
+  color: var(--weiss);
+  font-weight: 700;
+}
+.knopf-haupt:hover {
+  background: #155960;
+  border-color: #155960;
+}
+.knopf-akzent {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--weiss);
+  font-weight: 700;
+}
+.knopf-akzent:hover {
+  background: var(--orange-dunkel);
+  border-color: var(--orange-dunkel);
+}
+.knopf-klein {
+  min-height: 34px;
+  padding: 5px 10px;
+  font-size: 15px;
+}
+
+/* Kopfzeile */
+.kopf {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--dunkelblau);
+  color: var(--weiss);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.kopf-innen {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+.marke {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: auto;
+  font-weight: 700;
+  font-size: 20px;
+}
+.marke-punkt {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--weiss);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 700;
+  flex: none;
+}
+.marke small {
+  display: block;
+  font-weight: 400;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+/* Anmeldeseite */
+body.anmeldung {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: var(--dunkelblau);
+}
+.anmelde-karte {
+  width: 100%;
+  max-width: 420px;
+  background: var(--weiss);
+  border-radius: 14px;
+  padding: 32px 28px 28px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border-top: 6px solid var(--orange);
+}
+.anmelde-karte h1 {
+  margin: 0 0 4px;
+  font-size: 26px;
+  color: var(--petrol);
+}
+.anmelde-karte p {
+  margin: 0 0 20px;
+  color: var(--text-leise);
+}
+.feld {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.feld label {
+  font-weight: 700;
+}
+.feld input[type="password"],
+.feld input[type="search"],
+.feld select {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #bfbfbf;
+  border-radius: 8px;
+  background: var(--weiss);
+  color: var(--text);
+}
+.ankreuzen {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  color: var(--text-leise);
+}
+.ankreuzen input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--petrol);
+}
+.anmelde-karte .knopf {
+  width: 100%;
+  min-height: 46px;
+}
+.meldung {
+  min-height: 1.4em;
+  margin: 12px 0 0;
+  font-weight: 700;
+}
+.meldung.fehler {
+  color: #b42318;
+}
+
+/* Startseite */
+.werkzeuge {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  flex: 1 1 520px;
+  justify-content: flex-end;
+}
+.werkzeuge select,
+.werkzeuge input {
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--text);
+  background: var(--weiss);
+}
+.werkzeuge input[type="search"] {
+  flex: 1 1 200px;
+  min-width: 160px;
+  max-width: 340px;
+}
+.werkzeuge select {
+  flex: 0 1 300px;
+  min-width: 0;
+}
+.werkzeuge .knopf {
+  background: transparent;
+  color: var(--weiss);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.werkzeuge .knopf:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.unsichtbar {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+main.inhalt {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 16px 48px;
+}
+.kapitel {
+  margin: 0 0 28px;
+}
+.kapitel-kopf {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  border-bottom: 3px solid var(--orange);
+}
+.kapitel-kopf h2 {
+  margin: 0 auto 0 0;
+  font-size: 24px;
+  color: var(--petrol);
+}
+.kapitel-leer {
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  background: var(--hellgrau);
+  color: var(--text-leise);
+}
+.karten-raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+.lektion {
+  display: flex;
+  flex-direction: column;
+  background: var(--weiss);
+  border-radius: var(--radius);
+  box-shadow: var(--schatten);
+  overflow: hidden;
+}
+.lektion-kopf {
+  display: flex;
+  gap: 14px;
+  padding: 16px 16px 10px;
+}
+.lektion-nummer {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--weiss);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 1;
+  text-align: center;
+}
+.lektion-nummer small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.lektion h3 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.25;
+  color: var(--dunkelblau);
+}
+.lektion .untertitel {
+  margin: 3px 0 0;
+  color: var(--text-leise);
+}
+.lektion-daten {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 16px 12px;
+  margin: 0;
+  list-style: none;
+  font-size: 15px;
+}
+.lektion-daten li {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--hellgrau);
+}
+.lektion-daten .niveau {
+  background: var(--petrol-hell);
+  color: var(--petrol);
+  font-weight: 700;
+}
+.lektion-aktionen {
+  margin-top: auto;
+  padding: 12px 16px 16px;
+  border-top: 1px solid #ececec;
+  display: grid;
+  gap: 8px;
+}
+.aktionen-zeile {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.aktionen-zeile .knopf-haupt,
+.aktionen-zeile .knopf-referent {
+  flex: 1 1 140px;
+}
+.leer-treffer {
+  padding: 28px;
+  text-align: center;
+  color: var(--text-leise);
+}
+.ladeanzeige {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-leise);
+}
+.fusszeile {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px 32px;
+  font-size: 14px;
+  color: var(--text-leise);
+}
+
+@media (max-width: 720px) {
+  .karten-raster {
+    grid-template-columns: 1fr;
+  }
+  .werkzeuge {
+    justify-content: stretch;
+  }
+  .werkzeuge select,
+  .werkzeuge input[type="search"] {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+}
