@@ -87,6 +87,9 @@ des Laufs unter *Actions*. Bestehende Markdown-Dateien werden nie automatisch ü
 pip install -r requirements.txt
 python tools/pptx_zu_md.py quellen/datei.pptx --kapitel k1 --id l2-bewertungen-datenstau --datum 2026-09-22
 ```
+Besteht eine Lektion aus mehreren PowerPoint-Dateien, kann `"original"` in `kapitel.json` auch eine Liste sein;
+dann gibt es mehrere Buttons «Original Teil 1/2».
+
 Weitere Angaben: `--titel`, `--untertitel`, `--niveau`, `--ueberschreiben` (ersetzt eine bestehende Datei,
 Handkorrekturen gehen verloren). `python tools/pptx_zu_md.py --help` zeigt alles.
 
@@ -117,13 +120,21 @@ Notizen für die Referentenansicht.
 
 | Layout | Schreibweise | Wirkung |
 |---|---|---|
-| Titel | `<!-- .slide: class="titel" -->` | dunkelblauer Hintergrund, Lektionsnummer im orangen Kreis (aus `kapitel.json`; abweichend mit `data-nummer="3"`) |
-| Auftrag | `<!-- .slide: class="auftrag" -->` | erste Liste mit `Zeit:`, `Sozialform:`, `Material:`, `Arbeitsbuch:` (optional `Auftrag: 2`) wird zur Seitenleiste, rechts die Arbeitsschritte |
-| Lösung | `<!-- .slide: class="loesung" -->` | grüner Rand und Band «Lösung» |
-| Merke | `<!-- .slide: class="merke" -->` | dunkle Merksatzfolie |
-| Karten | `<!-- .slide: class="karten" -->` | jede `### Überschrift` wird ein Kasten, 2 bis 4 nebeneinander |
+| Titel | `<!-- .slide: class="titel" -->` | dunkelblauer Hintergrund, Lektionsnummer im orangen Kreis und «Lektion N» (aus `kapitel.json`; abweichend mit `data-nummer="3"`); Text nach `***` steht klein am unteren Rand |
+| Frage | `<!-- .slide: class="frage" -->` | Impulsfolie auf blauem Grund |
+| Auftrag | `<!-- .slide: class="auftrag" -->` | erste Liste mit `Auftrag: 1`, `Zeit:`, `Sozialform:`, `Material:`, `Arbeitsbuch:` wird zur Seitenleiste, rechts die Arbeitsschritte |
+| Lösung | `<!-- .slide: class="loesung" -->` | grüner Rand und Band «Lösung»; `**1. Falsch: ...**` färbt «Falsch», «Richtig», «Möglich» |
+| Merke | `<!-- .slide: class="merke" -->` | dunkle Merksatzfolie, Merksatz als `##`, Erklärung unten |
+| Ziele | `<!-- .slide: class="ziele" -->` | nummerierte Liste als Kästen mit Nummernkreis («Das lernst du heute») |
+| Karten | `<!-- .slide: class="karten" -->` | jede `### Überschrift` wird ein Kasten, bis 4 nebeneinander (mehr in Reihen, `data-spalten="2"` legt die Spaltenzahl fest); `***` beendet die Karten |
+| Karten-Varianten | `class="karten nummeriert"`, `class="karten untereinander"` | Nummernkreise in den Karten, oder Kästen untereinander (z. B. «Zum Schluss») |
+| Hervorheben | `### Titel <!-- .element: class="hervor" -->` | eine Karte dunkel hervorheben |
 | Spalten | `<!-- .slide: class="spalten" -->` | Text links, Bild rechts; mit `***` selbst trennen |
-| Zeitbadge | `<!-- .slide: data-zeit="7" -->` | Badge «7'» oben rechts, Countdown mit T |
+| Kennzahl | `<!-- .slide: class="kennzahl" -->` | grosse Zahl als `###` links, Erklärung nach `***` rechts |
+| Dicht | `class="... dicht"` | etwas kleinere Schrift für textreiche Folien (nie unter 24 px) |
+| Zeitbadge | `<!-- .slide: data-zeit="7" -->` | oranger Kreis «7'» oben rechts, Countdown mit T |
+
+Videos: `[![Beschreibung](bilder/vorschau.jpg)](https://www.youtube.com/watch?v=...)` zeigt ein Vorschaubild; ein Klick spielt das Video im Overlay auf der Folie ab (braucht Internet).
 
 Klassen lassen sich kombinieren, zum Beispiel `class="auftrag loesung"`.
 

@@ -143,11 +143,12 @@ export function inhalteLaden() {
         bilder[verweis] = { pfad: bildPfad, typ };
       }
 
-      let original = null;
-      if (l.original) {
-        const o = path.join(QUELLEN, l.original);
-        if (fs.existsSync(o)) original = o;
-        else console.warn(`Hinweis: ${ort}: Original quellen/${l.original} nicht gefunden, Button entfaellt.`);
+      // "original" ist ein Dateiname oder eine Liste (Praesentation aus mehreren PowerPoint-Dateien)
+      const originale = [];
+      for (const name of [].concat(l.original || [])) {
+        const o = path.join(QUELLEN, name);
+        if (fs.existsSync(o)) originale.push(o);
+        else console.warn(`Hinweis: ${ort}: Original quellen/${name} nicht gefunden, Button entfaellt.`);
       }
 
       return {
@@ -163,7 +164,7 @@ export function inhalteLaden() {
         markdown,
         mdPfad,
         bilder,
-        original,
+        originale,
         basisName,
         suchtext: suchText(markdown)
       };

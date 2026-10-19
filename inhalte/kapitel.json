@@ -10,7 +10,48 @@
       "id": "k1",
       "kuerzel": "K1",
       "titel": "Kapitel 1: Eine Entdeckungsreise durch das Internet",
-      "lektionen": []
+      "lektionen": [
+        {
+          "id": "l2-ferien-ohne-internet",
+          "titel": "Ferien ohne Internet?",
+          "untertitel": "Router, Provider und Server",
+          "kurztitel": "Ferien_ohne_Internet",
+          "datum": "2026-08-25",
+          "datei": "k1/l2-ferien-ohne-internet.md",
+          "original": "02_MI_Praesentation_Kapitel1_Lektion1.pptx"
+        },
+        {
+          "id": "l1-ip-adresse-standort",
+          "titel": "Wo gibt es die beste Glace?",
+          "untertitel": "Wie Webseiten wissen, wo du gerade bist",
+          "kurztitel": "IP_Adresse_Standort",
+          "datum": "2026-09-15",
+          "datei": "k1/l1-ip-adresse-standort.md",
+          "original": "02_MI_Praesentation_Kapitel1_Lektion2_IP-Adresse_und_Standort.pptx"
+        },
+        {
+          "id": "l2-bewertungen-datenstau",
+          "titel": "Kann man Bewertungen trauen?",
+          "untertitel": "Und: Warum ruckelt das Video in den Ferien?",
+          "kurztitel": "Bewertungen_Datenstau",
+          "datum": "2026-09-22",
+          "niveau": "B",
+          "datei": "k1/l2-bewertungen-datenstau.md",
+          "original": [
+            "02_MI_Praesentation_K1_L3_Bewertungen_und_Datenstau.pptx",
+            "02_MI_Praesentation_K1_L4_Datenstau.pptx"
+          ]
+        },
+        {
+          "id": "l3-netzwerke-planen",
+          "titel": "Netzwerke planen",
+          "untertitel": "Das Verfahren von Prim",
+          "kurztitel": "Netzwerke_Prim",
+          "niveau": "B",
+          "datei": "k1/l3-netzwerke-planen.md",
+          "original": "MI_K1_L5_NiveauB_Netzwerke_planen_Prim.pptx"
+        }
+      ]
     },
     {
       "id": "k2",

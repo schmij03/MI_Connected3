@@ -3,12 +3,30 @@
 
 Alle Folienlayouts auf einen Blick
 
-Vorlage zum Kopieren für neue Lektionen
+***
+
+Vorlage zum Kopieren für neue Lektionen. Text nach drei Sternchen steht klein am unteren Rand.
 
 Note:
 Diese Präsentation zeigt alle Layouts. Kopiere die Datei, wenn du eine neue Lektion von Hand schreiben willst.
 
 Die Lektionsnummer im orangen Kreis kommt aus der kapitel.json.
+
+---
+
+<!-- .slide: class="ziele" -->
+## Das lernst du heute
+
+1. Ich kann erklären, wie Folien mit Markdown entstehen.
+2. Ich kann die Layouts für Aufträge, Lösungen und Merksätze verwenden.
+3. Ich kann eine neue Präsentation ergänzen.
+
+---
+
+<!-- .slide: class="frage" data-zeit="5" -->
+## Woher weiss die Suchmaschine, wo wir sind?
+
+Sammelt eure Vermutungen. Es gibt mehr als eine richtige Antwort.
 
 ---
 
@@ -67,7 +85,8 @@ Mit der Taste **T** startet der Countdown.
 <!-- .slide: class="auftrag" -->
 ## Bewertungen prüfen
 
-- Zeit: 7'
+- Auftrag: 1
+- Zeit: 7 Minuten
 - Sozialform: Partnerarbeit
 - Material: Laptop, Arbeitsblatt
 - Arbeitsbuch: S. 14 und 15
@@ -95,8 +114,8 @@ Die Zeit wird zum Zeitbadge und zur Dauer des Countdowns (Taste T).
 
 ---
 
-<!-- .slide: class="karten" -->
-## Drei Begriffe
+<!-- .slide: class="karten nummeriert" -->
+## Drei Begriffe (nummeriert, eine Karte hervorgehoben)
 
 ### Router
 Verbindet die Geräte zu Hause und leitet die Daten ins Internet weiter.
@@ -104,8 +123,30 @@ Verbindet die Geräte zu Hause und leitet die Daten ins Internet weiter.
 ### Provider
 Firma, die uns den Zugang zum Internet verkauft.
 
-### Server
+### Server <!-- .element: class="hervor" -->
 Computer, der Daten speichert und auf Anfrage verschickt.
+
+---
+
+<!-- .slide: class="kennzahl" -->
+### 200 000 km/s
+
+**so schnell sind Daten im Glasfaserkabel**
+
+***
+
+Deshalb ist die Länge der Leitung fast nie das Problem.
+
+---
+
+<!-- .slide: class="karten untereinander" -->
+## Zum Schluss
+
+### Hausaufgabe
+Prüfe zu Hause, welche Apps deinen Standort verlangen.
+
+### Nächstes Mal
+Kann man Online-Bewertungen trauen?
 
 ---
 

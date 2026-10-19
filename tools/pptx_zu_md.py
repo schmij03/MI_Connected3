@@ -63,7 +63,7 @@ SEITENLEISTE = [
     ("Zeit", r"zeit|dauer"),
     ("Sozialform", r"sozialform|arbeitsform"),
     ("Material", r"material(ien)?"),
-    ("Arbeitsbuch", r"arbeitsbuch|ab|buch|lehrmittel|arbeitsheft"),
+    ("Arbeitsbuch", r"arbeitsbuch|buch|lehrmittel|arbeitsheft"),
 ]
 ZEIT_MUSTER = re.compile(r"^\s*(?:ca\.\s*)?(\d+(?:[.,]\d+)?)\s*(?:['’′]|min\.?|minuten)\s*$", re.I)
 
@@ -279,10 +279,23 @@ class Element:
     fuellung: str | None = None
     platzhalter: str | None = None
     bild: str | None = None  # Markdown-Pfad
+    link: str | None = None  # z. B. eingebettetes Online-Video
     alt: str = ""
     tabelle: list[list[str]] | None = None
     name: str = ""
     groesse: float = 0.0  # groesste Schrift in Punkt (0 = unbekannt)
+    # Nur fuer art == "kasten": farbige Form mit Inhalt
+    kopf: "Absatz | None" = None
+    nummer: str | None = None
+    kinder: list = field(default_factory=list)
+
+    @property
+    def mitte(self) -> tuple[float, float]:
+        return self.x + self.w / 2, self.y + self.h / 2
+
+    def enthaelt(self, anderes: "Element") -> bool:
+        mx, my = anderes.mitte
+        return self.x <= mx <= self.x + self.w and self.y <= my <= self.y + self.h
 
     @property
     def roh(self) -> str:
@@ -332,6 +345,7 @@ class Leser:
         self.bildordner = bildordner
         self.bilder_gespeichert: dict[str, str] = {}
         self.warnungen: list[str] = []
+        self.fusszeilen: set[str] = set()
 
     def bild_speichern(self, form, folien_nr: int, nummer: int) -> str | None:
         try:
@@ -347,6 +361,9 @@ class Leser:
                 return None
             daten, endung = umgewandelt, "png"
         daten = zuschneiden(form, daten, endung)
+        return self.daten_speichern(daten, endung, folien_nr, nummer)
+
+    def daten_speichern(self, daten: bytes, endung: str, folien_nr: int, nummer: int) -> str:
         schluessel = f"{len(daten)}:{hash(daten)}"
         if schluessel in self.bilder_gespeichert:
             return self.bilder_gespeichert[schluessel]
@@ -401,11 +418,29 @@ class Leser:
                         el.alt = bild_alt(form)
                         elemente.append(el)
                     continue
+                if form.shape_type == MSO_SHAPE_TYPE.MEDIA:
+                    zaehler[0] += 1
+                    video = video_lesen(form, folie)
+                    if video is not None:
+                        daten, endung, link = video
+                        pfad = self.daten_speichern(daten, endung, folien_nr, zaehler[0]) if daten else None
+                        if link and not link.startswith("http"):
+                            self.warnungen.append(f"Folie {folien_nr}: Video «{form.name}» ist eine Datei in der PowerPoint und wurde nur als Bild uebernommen.")
+                            link = None
+                        if pfad or link:
+                            el.art = "bild"
+                            el.bild = pfad
+                            el.link = link
+                            el.alt = bild_alt(form) or "Video"
+                            elemente.append(el)
+                    continue
                 if getattr(form, "has_chart", False) and form.has_chart:
                     self.warnungen.append(f"Folie {folien_nr}: Diagramm «{form.name}» wurde nicht uebernommen (bitte als Bild einfuegen).")
                     continue
                 if form._element.tag.endswith("graphicFrame"):
                     self.warnungen.append(f"Folie {folien_nr}: Grafik «{form.name}» (z. B. SmartArt) wurde nicht uebernommen.")
+                    continue
+                if form.has_text_frame and form.text_frame.text.strip() in self.fusszeilen and y > self.hoehe * 0.85:
                     continue
                 if form.has_text_frame and form.text_frame.text.strip():
                     im_platzhalter = platzhalter in (PP_PLACEHOLDER.BODY, PP_PLACEHOLDER.OBJECT)
@@ -432,13 +467,43 @@ class Leser:
         return elemente
 
 
+def video_lesen(form, folie) -> tuple[bytes | None, str, str | None] | None:
+    """Vorschaubild und Adresse eines eingebetteten Videos."""
+    el = form._element
+    daten, endung, link = None, "png", None
+    blip = el.find(".//a:blip", NS)
+    if blip is not None:
+        rid = blip.get(f"{{{NS['r']}}}embed")
+        try:
+            teil = folie.part.related_part(rid)
+            daten = teil.blob
+            endung = teil.partname.ext.lower()
+        except Exception:
+            daten = None
+    for kind in el.iter():
+        name = etree.QName(kind).localname
+        if name in ("videoFile", "media"):
+            rid = kind.get(f"{{{NS['r']}}}link") or kind.get(f"{{{NS['r']}}}embed")
+            if rid and rid in folie.part.rels:
+                beziehung = folie.part.rels[rid]
+                link = beziehung.target_ref if beziehung.is_external else beziehung.target_ref
+                break
+    if link:
+        m = re.search(r"youtube(?:-nocookie)?\.com/embed/([\w-]+)", link)
+        if m:
+            link = f"https://www.youtube.com/watch?v={m.group(1)}"
+    if daten is None and link is None:
+        return None
+    return daten, endung, link
+
+
 def bild_alt(form) -> str:
     try:
         cnv = form._element.find(".//p:cNvPr", NS)
         text = (cnv.get("descr") or "").strip() if cnv is not None else ""
     except Exception:
         text = ""
-    if not text or len(text) > 200 or "automatisch generiert" in text.lower():
+    if not text or len(text) > 200 or "automatisch generiert" in text.lower() or re.search(r"[/\\]|\.(png|jpe?g|gif|svg)$", text, re.I):
         text = ""
     return text.replace("\n", " ").replace("]", ")").replace("[", "(")
 
@@ -540,6 +605,10 @@ def tabelle_zu_md(tabelle: list[list[str]]) -> str:
 
 def element_zu_md(el: Element) -> str:
     if el.art == "bild":
+        if el.link and el.bild:
+            return f"[![{el.alt}]({el.bild})]({el.link})"
+        if el.link:
+            return f"[{el.alt or 'Video'}]({el.link})"
         return f"![{el.alt}]({el.bild})"
     if el.art == "tabelle":
         return tabelle_zu_md(el.tabelle or [])
@@ -591,161 +660,344 @@ def seitenleisten_paare(texte: list[str]) -> list[tuple[str, str]]:
     return paare
 
 
-def ist_karten(elemente: list[Element], hoehe: int) -> list[Element] | None:
-    """2 bis 4 gefuellte Textkaesten nebeneinander mit aehnlicher Groesse."""
-    kandidaten = [
-        e for e in elemente if e.art == "text" and (e.fuellung or e.platzhalter is None) and e.w > 0 and len(e.absaetze) >= 1
+def ist_marke(e: Element, breite: int) -> bool:
+    """Kleiner Kreis oder kleines Quadrat (Nummer, Zeitangabe, Symbol)."""
+    return e.w > 0 and e.w < breite * 0.14 and abs(e.w - e.h) < e.w * 0.2
+
+
+def kaesten_bilden(elemente: list[Element], breite: int, hoehe: int) -> tuple[list[Element], list[Element]]:
+    """
+    Fasst Textfelder und Bilder, die auf einer farbigen Form liegen, zu einem Kasten zusammen.
+    Gibt (Elemente, Marken) zurueck. Marken sind kleine Kreise mit Text (Nummer, Zeit),
+    die nicht in einem Kasten liegen.
+    """
+    benutzt: set[int] = set()
+    # Kleine Bilder sind Symbole (Icons): weglassen, ebenso ihr Kreis
+    for e in elemente:
+        if e.art == "bild" and e.w < breite * 0.06 and e.h < hoehe * 0.1:
+            benutzt.add(id(e))
+            for f in elemente:
+                if f.art == "flaeche" and ist_marke(f, breite) and f.enthaelt(e):
+                    benutzt.add(id(f))
+
+    # Marken: kleiner Kreis mit kurzem Text darauf (oder Text, der selbst ein gefuellter Kreis ist)
+    marken: list[Element] = []
+    for f in elemente:
+        if id(f) in benutzt or not ist_marke(f, breite):
+            continue
+        if f.art == "text" and f.fuellung and len(f.roh) <= 6:
+            marken.append(f)
+            benutzt.add(id(f))
+            continue
+        if f.art != "flaeche":
+            continue
+        text = next(
+            (t for t in elemente if t.art == "text" and id(t) not in benutzt and len(t.roh) <= 6 and f.enthaelt(t)),
+            None,
+        )
+        if text is not None:
+            text.x, text.y, text.w, text.h, text.fuellung = f.x, f.y, f.w, f.h, f.fuellung
+            marken.append(text)
+            benutzt.update({id(f), id(text)})
+
+    # Kaesten: groessere farbige Formen (oder gefuellte Textfelder)
+    flaeche_gesamt = breite * hoehe
+    kaesten = [
+        e
+        for e in elemente
+        if id(e) not in benutzt
+        and e.art in ("flaeche", "text")
+        and e.fuellung
+        and e.w >= breite * 0.12
+        and e.h >= hoehe * 0.06
+        and e.w * e.h < flaeche_gesamt * 0.9
     ]
-    # Leere Flaechen hinter Text zaehlen als Fuellung
-    flaechen = [e for e in elemente if e.art == "flaeche"]
-    for e in kandidaten:
-        if not e.fuellung:
-            for f in flaechen:
-                if f.x <= e.x + e.w * 0.1 and f.x + f.w >= e.x + e.w * 0.9 and f.y <= e.y + e.h * 0.2 and f.y + f.h >= e.y + e.h * 0.8:
-                    e.fuellung = f.fuellung
-    kandidaten = [e for e in kandidaten if e.fuellung and e.y > hoehe * 0.12]
-    if len(kandidaten) < 2:
-        return None
-    # Gruppe mit aehnlicher Oberkante und Breite suchen
-    kandidaten.sort(key=lambda e: e.x)
+    kaesten.sort(key=lambda k: k.w * k.h)
+    inhalt: dict[int, list[Element]] = {id(k): [] for k in kaesten}
+    for e in elemente + marken:
+        if id(e) in benutzt and e not in marken:
+            continue
+        if e in kaesten and e.art == "flaeche":
+            continue
+        ziel = next((k for k in kaesten if k is not e and k.enthaelt(e) and k.w * k.h > e.w * e.h), None)
+        if ziel is not None:
+            inhalt[id(ziel)].append(e)
+
+    ergebnis_kaesten: list[Element] = []
+    in_kasten: set[int] = set()
+    for k in kaesten:
+        teile = inhalt[id(k)]
+        if k.art == "text":
+            teile = [k] + teile
+        texte = [t for t in lesereihenfolge(teile) if t.art == "text" and t not in marken]
+        nummern = [m for m in teile if m in marken and re.fullmatch(r"\d{1,2}", m.roh)]
+        bilder = [b for b in teile if b.art == "bild"]
+        if not texte and not bilder:
+            continue
+        kasten = Element(art="kasten", x=k.x, y=k.y, w=k.w, h=k.h, fuellung=k.fuellung, name=k.name)
+        kasten.nummer = nummern[0].roh if nummern else None
+        # Eine Ziffer als eigener Text (ohne Kreis) zaehlt auch als Nummer
+        if kasten.nummer is None and texte and re.fullmatch(r"\d{1,2}", texte[0].roh):
+            kasten.nummer = texte[0].roh
+            texte = texte[1:]
+        absaetze = [a for t in texte for a in t.absaetze]
+        groessen = [t.groesse for t in texte]
+        if absaetze and (len(absaetze) > 1) and (
+            absaetze[0].fett or (len(texte) > 1 and groessen[0] > max(groessen[1:]))
+        ) and len(absaetze[0].roh) < 70:
+            kasten.kopf = absaetze[0]
+            absaetze = absaetze[1:]
+        kasten.absaetze = absaetze
+        kasten.kinder = bilder
+        kasten.groesse = max(groessen) if groessen else 0.0
+        ergebnis_kaesten.append(kasten)
+        in_kasten.update(id(t) for t in teile)
+        in_kasten.add(id(k))
+        # Verschachtelte Kaesten nicht doppelt ausgeben
+        for anderer in ergebnis_kaesten[:-1]:
+            if k.enthaelt(anderer) and id(anderer) not in in_kasten:
+                in_kasten.add(id(anderer))
+
+    uebrig = [
+        e
+        for e in elemente
+        if id(e) not in benutzt and id(e) not in in_kasten and e.art != "flaeche" and e not in marken
+    ]
+    freie_marken = [m for m in marken if id(m) not in in_kasten]
+    # Kaesten, die ganz in einem anderen Kasten liegen, entfernen
+    flach = []
+    for k in ergebnis_kaesten:
+        if any(o is not k and o.enthaelt(k) and o.w * o.h > k.w * k.h * 1.2 for o in ergebnis_kaesten):
+            continue
+        flach.append(k)
+    return uebrig + flach, freie_marken
+
+
+def kasten_zu_md(k: Element, als_karte: bool = False) -> str:
+    teile = []
+    if k.kopf is not None:
+        kopf = k.kopf.text.replace("**", "")
+        if als_karte:
+            teile.append(f"### {kopf}" + (' <!-- .element: class="hervor" -->' if helligkeit(k.fuellung) < 0.4 else ""))
+        else:
+            teile.append(f"**{kopf}**")
+    if k.absaetze:
+        teile.append(absaetze_zu_md(k.absaetze))
+    for b in k.kinder:
+        teile.append(element_zu_md(b))
+    return "\n\n".join(t for t in teile if t)
+
+
+def gruppe_nebeneinander(kaesten: list[Element], hoehe: int) -> list[Element]:
     beste: list[Element] = []
-    for basis in kandidaten:
-        gruppe = [
-            e
-            for e in kandidaten
-            if abs(e.y - basis.y) < hoehe * 0.08 and 0.6 < (e.w / basis.w if basis.w else 0) < 1.66
-        ]
+    for basis in kaesten:
+        gruppe = [k for k in kaesten if abs(k.y - basis.y) < hoehe * 0.06 and 0.6 < k.w / max(basis.w, 1) < 1.66]
         if len(gruppe) > len(beste):
             beste = gruppe
-    if 2 <= len(beste) <= 4:
-        # Nebeneinander, ohne grosse Ueberlappung
-        beste.sort(key=lambda e: e.x)
-        for a, b in zip(beste, beste[1:]):
-            if b.x < a.x + a.w * 0.8:
-                return None
-        return beste
-    return None
+    if len(beste) < 2:
+        return []
+    beste.sort(key=lambda k: k.x)
+    for a, b in zip(beste, beste[1:]):
+        if b.x < a.x + a.w * 0.8:
+            return []
+    # Weitere Reihen mit gleich breiten Kaesten gehoeren dazu (z. B. 3 + 2 Karten)
+    breite = sum(k.w for k in beste) / len(beste)
+    weitere = [k for k in kaesten if k not in beste and 0.8 < k.w / breite < 1.25 and k.y > beste[0].y]
+    return sorted(beste + weitere, key=lambda k: (round(k.y / max(k.h, 1) * 2), k.x))
+
+
+def gruppe_untereinander(kaesten: list[Element], breite: int) -> list[Element]:
+    breite_kaesten = [k for k in kaesten if k.w > breite * 0.45]
+    if len(breite_kaesten) < 2:
+        return []
+    basis = breite_kaesten[0]
+    gruppe = [k for k in breite_kaesten if abs(k.x - basis.x) < breite * 0.05]
+    return sorted(gruppe, key=lambda k: k.y) if len(gruppe) >= 2 else []
 
 
 def zeit_aus(elemente: list[Element], breite: int, hoehe: int) -> tuple[str | None, Element | None]:
     for e in elemente:
         if e.art != "text":
             continue
-        text = e.roh
-        m = ZEIT_MUSTER.match(text)
-        if m and e.w < breite * 0.25 and e.y < hoehe * 0.3:
+        m = ZEIT_MUSTER.match(e.roh)
+        if m and e.w < breite * 0.25 and e.y < hoehe * 0.3 and e.x > breite * 0.6:
             return m.group(1).replace(",", "."), e
     return None, None
 
 
-def hinweis_aus(elemente: list[Element], hoehe: int) -> Element | None:
-    for e in elemente:
-        if e.art != "text" or not e.absaetze:
-            continue
-        unten = e.y > hoehe * 0.68
-        hinweis_wort = re.match(r"^(hinweis|tipp|achtung|wichtig|info|beachte)\b", e.roh, re.I)
-        if unten and (e.fuellung or hinweis_wort) and len(e.roh) < 300:
-            return e
-    return None
-
-
 def folie_umwandeln(leser: Leser, folie, nr: int, erste: bool) -> FolienErgebnis:
     breite, hoehe = int(leser.breite), int(leser.hoehe)
-    elemente = leser.formen(folie, nr)
+    roh = leser.formen(folie, nr)
     bg = hintergrund(folie, leser.farben)
     dunkel = helligkeit(bg) < 0.35
+    elemente, marken = kaesten_bilden(roh, breite, hoehe)
 
-    titel_el = next((e for e in elemente if e.art == "titel"), None)
+    # --- Zeitbadge oben rechts
+    zeit, zeit_el = zeit_aus(marken + elemente, breite, hoehe)
+    if zeit_el is not None:
+        if zeit_el in marken:
+            marken.remove(zeit_el)
+        if zeit_el in elemente:
+            elemente.remove(zeit_el)
+
+    texte = [e for e in elemente if e.art in ("text", "titel", "untertitel")]
+    alle_texte = " ".join(e.roh for e in roh if e.absaetze).lower()
+
+    # --- Kennzeichnungen wie "Lektion 2" und "Merke" (kleine Beschriftungen)
+    lektion_el = next((e for e in texte if re.fullmatch(r"lektion\s+\d+", e.roh, re.I)), None)
+    merke_el = next((e for e in texte if re.fullmatch(r"(merke|merksatz)\s*:?", e.roh, re.I)), None)
+    for e in (lektion_el, merke_el):
+        if e is not None:
+            elemente.remove(e)
+            texte.remove(e)
+
+    # --- Titel
+    titel_el = next((e for e in texte if e.art == "titel"), None)
     if titel_el is None:
-        # Ersatz: kurzer Text mit der groessten Schrift (auf Inhaltsfolien im oberen Drittel)
-        texte = [
+        kandidaten = [
             e
-            for e in elemente
-            if e.art == "text"
-            and len(e.roh) < 120
+            for e in texte
+            if len(e.roh) < 120
             and len(e.absaetze) <= 2
-            and not ZEIT_MUSTER.match(e.roh)
             and not re.fullmatch(r"\d{1,2}", e.roh)
-            and not re.match(r"^(merke|merksatz)\b", e.roh, re.I)
-            and (erste or e.y < hoehe * 0.35)
+            and (erste or merke_el is not None or e.y < hoehe * 0.35 or dunkel)
         ]
-        texte.sort(key=lambda e: (-e.groesse, e.y))
-        if texte:
-            titel_el = texte[0]
+        kandidaten.sort(key=lambda e: (-e.groesse, e.y))
+        if kandidaten:
+            titel_el = kandidaten[0]
     titel = titel_el.roh.replace("\n", " ").strip() if titel_el else ""
+    if titel_el is not None:
+        elemente.remove(titel_el)
     untertitel_el = next((e for e in elemente if e.art == "untertitel"), None)
 
-    rest = [e for e in elemente if e is not titel_el and e.art != "flaeche"]
-    alle_texte = " ".join(e.roh for e in elemente if e.absaetze).lower()
-
-    # --- Layout erkennen
-    klasse = None
-    zeit, zeit_el = zeit_aus(rest, breite, hoehe)
-    if zeit_el is not None:
-        rest.remove(zeit_el)
-
+    # --- Layout bestimmen
+    klasse: list[str] = []
     titel_klein = titel.lower()
-    if erste or (dunkel and untertitel_el is not None and nr <= 2):
-        klasse = "titel"
-    elif re.search(r"\bl(ö|oe)sung", titel_klein) or re.match(r"^l(ö|oe)sung", alle_texte.strip()):
-        klasse = "loesung"
-    elif re.match(r"^(merke|merksatz|das merke ich mir)", titel_klein) or (
-        dunkel and len(alle_texte) < 400 and not any(e.art in ("tabelle", "bild") for e in rest)
-    ):
-        klasse = "merke"
+    kaesten = [e for e in elemente if e.art == "kasten"]
+    nummer = None
+    if erste:
+        klasse.append("titel")
+        frei = [m for m in marken if re.fullmatch(r"\d{1,2}", m.roh)]
+        if frei:
+            nummer = frei[0].roh
+        elif lektion_el is not None:
+            nummer = re.sub(r"\D", "", lektion_el.roh)
+    elif merke_el is not None or re.match(r"^(merke|merksatz)\b", titel_klein):
+        klasse.append("merke")
+        titel = re.sub(r"^(merke|merksatz)\s*[:!]?\s*", "", titel, flags=re.I)
+    elif dunkel:
+        klasse.append("frage")
+    if re.search(r"l(ö|oe)sung", titel_klein):
+        klasse.append("loesung")
 
-    texte_zeilen = [a.roh for e in rest if e.art == "text" for a in e.absaetze]
-    paare = seitenleisten_paare(texte_zeilen)
-    ist_auftrag = re.search(r"\bauftrag\b", titel_klein) or any(n != "Auftrag" for n, _ in paare) and len(paare) >= 2
-    if klasse != "titel" and ist_auftrag and len([p for p in paare if p[0] != "Auftrag"]) >= 1:
-        klasse = "auftrag loesung" if klasse == "loesung" else "auftrag"
+    # Auftrag: hoher Kasten links mit dem Wort "Auftrag"
+    seitenleiste = next(
+        (
+            k
+            for k in kaesten
+            if k.x < breite * 0.2 and k.h > hoehe * 0.4 and k.w < breite * 0.4
+            and re.match(r"^auftrag", (k.kopf.roh if k.kopf else (k.absaetze[0].roh if k.absaetze else "")), re.I)
+        ),
+        None,
+    )
+    paare: list[tuple[str, str]] = []
+    if seitenleiste is not None and "titel" not in klasse:
+        zeilen = ([seitenleiste.kopf.roh] if seitenleiste.kopf else []) + [a.roh for a in seitenleiste.absaetze]
+        if seitenleiste.nummer:
+            paare.append(("Auftrag", seitenleiste.nummer))
+        if zeilen and re.fullmatch(r"auftrag", zeilen[0].strip(), re.I) and len(zeilen) > 1 and re.fullmatch(r"\d+[a-z]?", zeilen[1].strip()):
+            paare.append(("Auftrag", zeilen[1].strip()))
+            zeilen = zeilen[2:]
+        paare += [p for p in seitenleisten_paare(zeilen) if p[0] != "Auftrag" or not paare]
+        klasse.insert(0, "auftrag")
+        elemente.remove(seitenleiste)
+        kaesten.remove(seitenleiste)
+    elif "titel" not in klasse:
+        # Auftrag als Textzeilen ("Zeit: 10 Minuten") ohne Kasten
+        zeilen = [a.roh for e in elemente if e.art == "text" for a in e.absaetze]
+        moegliche = seitenleisten_paare(zeilen)
+        if re.search(r"\bauftrag\b", titel_klein) and len([p for p in moegliche if p[0] != "Auftrag"]) >= 1:
+            paare = moegliche
+            klasse.insert(0, "auftrag")
+            elemente = [x for x in (auftrag_ohne_leiste(e) for e in elemente) if x is not None]
 
-    karten = None
-    if klasse is None or klasse == "loesung":
-        karten = ist_karten(rest, hoehe)
-        if karten:
-            klasse = "karten" if klasse is None else "karten loesung"
-
-    hinweis = hinweis_aus(rest, hoehe) if klasse not in ("titel", "merke") else None
+    # Hinweis: heller Kasten unten
+    hinweis = None
+    if not {"titel", "merke"} & set(klasse):
+        for k in sorted(kaesten, key=lambda k: -k.y):
+            if k.y > hoehe * 0.68 and helligkeit(k.fuellung) > 0.6 and len(k.roh) < 300 and k.w > breite * 0.4:
+                hinweis = k
+                break
+        if hinweis is None:
+            for e in elemente:
+                if e.art == "text" and e.y > hoehe * 0.72 and re.match(r"^(hinweis|tipp|achtung|wichtig|merke|beachte)\b", e.roh, re.I):
+                    hinweis = e
+                    break
     if hinweis is not None:
-        rest.remove(hinweis)
+        elemente.remove(hinweis)
+        if hinweis in kaesten:
+            kaesten.remove(hinweis)
+
+    # Ziele, Karten
+    karten: list[Element] = []
+    ziele: list[Element] = []
+    untereinander = gruppe_untereinander(kaesten, breite)
+    if untereinander and all(k.nummer for k in untereinander):
+        ziele = untereinander
+        klasse.append("ziele")
+    elif untereinander and all(k.kopf for k in untereinander) and not gruppe_nebeneinander(kaesten, hoehe):
+        karten = untereinander
+        klasse += ["karten", "untereinander"]
+    else:
+        karten = gruppe_nebeneinander(kaesten, hoehe)
+        if len(karten) >= 2:
+            klasse.append("karten")
+            if all(k.nummer for k in karten):
+                klasse.append("nummeriert")
+        else:
+            karten = []
+    for k in karten + ziele:
+        elemente.remove(k)
 
     # Text links und Bild rechts nebeneinander -> zwei Spalten
-    bilder = [e for e in rest if e.art == "bild"]
-    texte = [e for e in rest if e.art in ("text", "tabelle")]
+    bilder = [e for e in elemente if e.art == "bild"]
+    inhalt = [e for e in elemente if e.art in ("text", "tabelle", "kasten")]
     spalten = False
-    if bilder and texte and klasse in (None, "loesung"):
-        spalten = all(b.x > breite * 0.4 for b in bilder) and all(t.x + t.w < breite * 0.62 for t in texte)
+    if bilder and inhalt and not ({"titel", "auftrag", "karten", "ziele"} & set(klasse)):
+        spalten = all(b.x > breite * 0.4 for b in bilder) and all(t.x + t.w < breite * 0.62 for t in inhalt)
         if spalten:
-            klasse = "spalten" if klasse is None else "spalten loesung"
+            klasse.append("spalten")
 
     # --- Markdown aufbauen
     teile: list[str] = []
     attribute = []
     if klasse:
-        attribute.append(f'class="{klasse}"')
-    if zeit and "auftrag" not in (klasse or ""):
+        attribute.append(f'class="{" ".join(dict.fromkeys(klasse))}"')
+    if zeit and "auftrag" not in klasse:
         attribute.append(f'data-zeit="{zeit}"')
+    if nummer and "titel" in klasse:
+        attribute.append(f'data-nummer="{nummer}"')
     if attribute:
         teile.append(f"<!-- .slide: {' '.join(attribute)} -->")
 
     def als_text(e: Element) -> str:
+        if e.art == "kasten":
+            return kasten_zu_md(e)
         if e.art != "text":
             return element_zu_md(e)
         return absaetze_zu_md([Absatz(a.text, a.roh, 0, "text") for a in e.absaetze])
 
-    if klasse == "titel":
-        # Die Lektionsnummer im Kreis setzt der Viewer aus kapitel.json
-        rest = [e for e in rest if not (e.art == "text" and re.fullmatch(r"\d{1,2}", e.roh))]
+    if "titel" in klasse:
         if titel:
             teile.append(f"# {md_escape(titel)}")
-        if untertitel_el is not None:
-            rest = [e for e in rest if e is not untertitel_el]
-            teile.append(als_text(untertitel_el))
-        teile.extend(als_text(e) for e in lesereihenfolge(rest))
+        fuss = [e for e in elemente if e.art == "text" and e.y > hoehe * 0.8]
+        oben = [e for e in lesereihenfolge(elemente) if e not in fuss]
+        teile.extend(als_text(e) for e in oben)
+        if fuss:
+            teile.append("***")
+            teile.extend(als_text(e) for e in fuss)
     else:
-        if "auftrag" in (klasse or ""):
-            # "Auftrag 1: Titel" -> "Titel", die Nummer steht in der Seitenleiste
+        if "auftrag" in klasse:
             m = re.match(r"^auftrag\s*(\d+[a-z]?)?\s*[:.\-–]\s*(.+)$", titel, re.I)
             if m:
                 titel = m.group(2)
@@ -753,41 +1005,45 @@ def folie_umwandeln(leser: Leser, folie, nr: int, erste: bool) -> FolienErgebnis
                     paare.insert(0, ("Auftrag", m.group(1)))
         if titel:
             teile.append(f"## {md_escape(titel)}")
-        if "auftrag" in (klasse or ""):
+        if "auftrag" in klasse:
             leiste = [f"- {name}: {md_escape(wert)}" for name, wert in paare]
             if zeit and not any(name == "Zeit" for name, _ in paare):
                 leiste.insert(0, f"- Zeit: {zeit}'")
             if leiste:
                 teile.append("\n".join(leiste))
-            # Zeilen der Seitenleiste nicht doppelt ausgeben
-            rest = [e for e in (auftrag_ohne_leiste(e) for e in rest) if e is not None]
+        geordnet = lesereihenfolge(elemente)
+        if spalten:
+            geordnet = [e for e in geordnet if e.art != "bild"] + ["***"] + [e for e in geordnet if e.art == "bild"]
+        oben = min((k.y for k in karten), default=hoehe)
+        for e in geordnet:
+            if e == "***":
+                teile.append("***")
+            elif e.y < oben or not karten:
+                teile.append(kasten_zu_md(e) if e.art == "kasten" else element_zu_md(e))
+        if ziele:
+            teile.append("\n".join(f"{i}. {absaetze_zu_md(k.absaetze).replace(chr(10), ' ')}" for i, k in enumerate(ziele, 1)))
+        for k in karten:
+            if k.kopf is None and k.absaetze:
+                k.kopf, k.absaetze = k.absaetze[0], k.absaetze[1:]
+            teile.append(kasten_zu_md(k, als_karte=True))
         if karten:
-            for karte in karten:
-                rest.remove(karte)
-            oben = min(k.y for k in karten)
-            geordnet = lesereihenfolge(rest)
-            teile.extend(element_zu_md(e) for e in geordnet if e.y < oben)
-            for karte in karten:
-                kopf, *inhalt = karte.absaetze
-                teile.append(f"### {kopf.text.strip('*') if kopf.fett else kopf.text}")
-                if inhalt:
-                    teile.append(absaetze_zu_md(inhalt))
-            teile.extend(element_zu_md(e) for e in geordnet if e.y >= oben)
-        else:
-            geordnet = lesereihenfolge(rest)
-            if spalten:
-                geordnet = [e for e in geordnet if e.art != "bild"] + [e for e in geordnet if e.art == "bild"]
-            teile.extend(element_zu_md(e) for e in geordnet)
-    if klasse == "merke":
-        # Das Wort "Merke" zeigt das Layout selbst an
-        teile = [re.sub(r"^(#+ )?(Merke|Merksatz)\s*[:!]?\s*", r"\1", t) if not t.startswith("<!--") else t for t in teile]
-        teile = [t for t in teile if t.strip() not in ("", "#", "##")]
+            teile.extend(
+                kasten_zu_md(e) if e.art == "kasten" else element_zu_md(e) for e in geordnet if e != "***" and e.y >= oben
+            )
     if hinweis is not None:
-        teile.append("\n".join("> " + zeile if zeile else ">" for zeile in absaetze_zu_md(hinweis.absaetze).split("\n")))
+        text = als_text(hinweis) if hinweis.art != "kasten" else absaetze_zu_md(
+            ([hinweis.kopf] if hinweis.kopf else []) + hinweis.absaetze
+        )
+        text = text.replace("**", "")
+        teile.append("\n".join("> " + z if z else ">" for z in text.split("\n")))
 
     markdown = "\n\n".join(t for t in teile if t and t.strip())
     untertitel = untertitel_el.roh.replace("\n", " ") if untertitel_el is not None else ""
-    return FolienErgebnis(markdown=markdown, titel=titel, untertitel=untertitel, klasse=klasse)
+    if not untertitel and "titel" in klasse:
+        rest_texte = [e for e in lesereihenfolge(elemente) if e.art == "text" and e.y < hoehe * 0.8]
+        if rest_texte:
+            untertitel = rest_texte[0].roh.replace("\n", " ")
+    return FolienErgebnis(markdown=markdown, titel=titel, untertitel=untertitel, klasse=" ".join(klasse) or None)
 
 
 def auftrag_ohne_leiste(e: Element) -> Element | None:
@@ -879,6 +1135,16 @@ def umwandeln(pptx: Path, kapitel: str, lektion: str) -> tuple[str, dict, list[s
     if not sichtbar:
         raise SystemExit("Die Datei enthaelt keine sichtbaren Folien.")
 
+    # Texte, die unten auf vielen Folien gleich stehen (Fusszeilen), weglassen
+    zaehler: Counter[str] = Counter()
+    for _, folie in sichtbar:
+        unten = set()
+        for form in folie.shapes:
+            if form.has_text_frame and form.text_frame.text.strip() and (form.top or 0) > leser.hoehe * 0.85:
+                unten.add(form.text_frame.text.strip())
+        zaehler.update(unten)
+    leser.fusszeilen = {t for t, n in zaehler.items() if n >= 3}
+
     folien_md = []
     meta = {"titel": "", "untertitel": ""}
     for i, (nr, folie) in enumerate(sichtbar):
@@ -894,6 +1160,12 @@ def umwandeln(pptx: Path, kapitel: str, lektion: str) -> tuple[str, dict, list[s
         if n:
             md += "\n\nNote:\n" + n
         folien_md.append(md)
+
+    # Bilder, die nicht im Markdown vorkommen (z. B. Symbole), wieder loeschen
+    alles = "\n".join(folien_md)
+    for pfad in set(leser.bilder_gespeichert.values()):
+        if pfad not in alles:
+            (bildordner / Path(pfad).name).unlink(missing_ok=True)
 
     kopf = (
         f"<!-- Erzeugt aus {pptx.name} mit tools/pptx_zu_md.py. Anleitung zum Bearbeiten: README.md -->\n\n"
@@ -980,10 +1252,12 @@ def farben_ermitteln(pptx: Path) -> dict[str, str]:
             return None
         return max(passende, key=lambda c: zaehler.get(c, 0))
 
-    ergebnis["dunkelblau"] = beste(lambda h, l, s: 0.55 <= h <= 0.72 and l < 0.35 and s > 0.25)
-    ergebnis["petrol"] = beste(lambda h, l, s: 0.45 <= h <= 0.55 and 0.15 < l < 0.5 and s > 0.25)
-    ergebnis["orange"] = beste(lambda h, l, s: 0.03 <= h <= 0.12 and 0.35 < l < 0.7 and s > 0.6)
-    ergebnis["hellgrau"] = beste(lambda h, l, s: s < 0.12 and 0.88 < l < 0.99)
+    kandidaten = [c for c in kandidaten if c not in ("FFFFFF", "000000")]
+    ergebnis["dunkelblau"] = beste(lambda h, l, s: 0.58 <= h <= 0.72 and l < 0.35 and s > 0.25)
+    ergebnis["petrol"] = beste(lambda h, l, s: 0.44 <= h < 0.58 and 0.15 < l < 0.5 and s > 0.25)
+    ergebnis["orange"] = beste(lambda h, l, s: (h <= 0.12 or h >= 0.97) and 0.35 < l < 0.7 and s > 0.6)
+    ergebnis["hellgrau"] = beste(lambda h, l, s: 0.88 < l < 0.985)
+    ergebnis["text"] = beste(lambda h, l, s: l < 0.22 and s < 0.35)
     print("Vorschlag fuer site/css/basis.css:")
     for name, wert in ergebnis.items():
         print(f"  --{name}: {'#' + wert.lower() if wert else '(nicht gefunden, bleibt)'}")
