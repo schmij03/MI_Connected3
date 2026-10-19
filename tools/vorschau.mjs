@@ -14,11 +14,16 @@ const TYPEN = {
   ".json": "application/json; charset=utf-8",
   ".woff2": "font/woff2",
   ".txt": "text/plain; charset=utf-8",
-  ".bin": "application/octet-stream"
+  ".md": "text/markdown; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".pdf": "application/pdf",
+  ".zip": "application/zip"
 };
 
 if (!fs.existsSync(ORDNER)) {
-  console.error("Zuerst bauen: node tools/build.mjs --passwort DEIN-PASSWORT");
+  console.error("Zuerst bauen: node tools/build.mjs");
   process.exit(1);
 }
 

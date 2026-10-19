@@ -1,8 +1,7 @@
-# Baut alle Praesentationen, verschluesselt sie und veroeffentlicht das Ergebnis
+# Baut alle Praesentationen mit allen Exporten und veroeffentlicht das Ergebnis
 # im oeffentlichen Pages-Repository (z. B. schmij03/mi-praesentationen).
 #
 # Benoetigt im Quell-Repository (Settings > Secrets and variables > Actions):
-#   Secret   SITE_PASSWORT     Passwort fuer die Website
 #   Secret   PAGES_DEPLOY_KEY  privater Teil des Deploy Keys (Schreibrecht im Pages-Repository)
 #   Variable PAGES_REPOSITORY  optional, Standard: <eigener Benutzer>/mi-praesentationen
 name: Website bauen
@@ -26,7 +25,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      SITE_PASSWORT: ${{ secrets.SITE_PASSWORT }}
       VEROEFFENTLICHEN: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
     steps:
       - uses: actions/checkout@v4
@@ -66,20 +64,13 @@ jobs:
           npm ci
           npx playwright install --with-deps chromium
 
-      - name: Passwort pruefen
-        run: |
-          if [ -z "$SITE_PASSWORT" ]; then
-            echo "::error::Das Secret SITE_PASSWORT fehlt. Anleitung: README.md, Abschnitt Einrichtung."
-            exit 1
-          fi
-
-      - name: Website bauen (Exporte und Verschluesselung)
+      - name: Website bauen (mit allen Exporten)
         run: node tools/build.mjs
 
       - name: Website im Browser pruefen
         run: node tools/pruefen.mjs
 
-      - name: Exporte als Artefakt ablegen (nur fuer dich sichtbar)
+      - name: Exporte als Artefakt ablegen
         uses: actions/upload-artifact@v4
         with:
           name: exporte

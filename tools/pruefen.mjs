@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /*
  * Prueft die gebaute Seite (build/site) automatisch im Browser:
- * Anmeldung, Startseite, jede Praesentation, Downloads und Referentenansicht.
+ * Startseite, jede Praesentation, Downloads und Referentenansicht.
  *
- * Aufruf: SITE_PASSWORT=geheim node tools/pruefen.mjs [--bilder ordner]
+ * Aufruf: node tools/pruefen.mjs [--bilder ordner]
  *   --bilder  speichert Bildschirmfotos aller Folien in diesem Ordner
  */
 import http from "node:http";
@@ -14,18 +14,23 @@ import { WURZEL } from "./lib/inhalte.mjs";
 
 const ORDNER = path.join(WURZEL, "build", "site");
 const args = process.argv.slice(2);
-let passwort = process.env.SITE_PASSWORT || "";
 let bilderOrdner = null;
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === "--passwort") passwort = args[++i];
-  else if (args[i] === "--bilder") bilderOrdner = path.resolve(args[++i]);
-}
-if (!passwort) {
-  console.error("Passwort fehlt (SITE_PASSWORT oder --passwort).");
-  process.exit(1);
+  if (args[i] === "--bilder") bilderOrdner = path.resolve(args[++i]);
 }
 
-const TYPEN = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".json": "application/json", ".woff2": "font/woff2" };
+const TYPEN = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css",
+  ".js": "text/javascript",
+  ".json": "application/json",
+  ".md": "text/markdown; charset=utf-8",
+  ".woff2": "font/woff2",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".pdf": "application/pdf"
+};
 const server = http.createServer((anfrage, antwort) => {
   let pfad = decodeURIComponent(new URL(anfrage.url, "http://x").pathname);
   if (pfad.endsWith("/")) pfad += "index.html";
@@ -54,26 +59,13 @@ const seitenFehler = [];
 seite.on("pageerror", (e) => seitenFehler.push(e.message));
 
 try {
-  console.log("Anmeldung");
-  await seite.goto(BASIS + "start.html");
-  await seite.waitForURL(/index\.html/);
-  pruefe(true, "Startseite leitet ohne Anmeldung zur Anmeldeseite");
+  console.log("Startseite");
+  await seite.goto(BASIS);
+  await seite.waitForSelector(".kapitel", { timeout: 20000 });
   const robots = await (await fetch(BASIS + "robots.txt")).text();
   pruefe(/Disallow: \//.test(robots), "robots.txt sperrt Suchmaschinen");
   pruefe((await seite.locator('meta[name="robots"]').getAttribute("content")).includes("noindex"), "noindex gesetzt");
 
-  await seite.fill("#passwort", passwort + "-falsch");
-  await seite.click("button[type=submit]");
-  await seite.waitForSelector(".meldung.fehler", { timeout: 20000 });
-  pruefe(/stimmt nicht/.test(await seite.textContent("#meldung")), "Falsches Passwort wird abgelehnt");
-
-  await seite.fill("#passwort", passwort);
-  await seite.click("button[type=submit]");
-  await seite.waitForURL(/start\.html/, { timeout: 20000 });
-  await seite.waitForSelector(".kapitel", { timeout: 20000 });
-  pruefe(true, "Richtiges Passwort fuehrt zur Startseite");
-
-  console.log("Startseite");
   const kapitel = await seite.locator(".kapitel").count();
   const karten = await seite.locator(".lektion").count();
   pruefe(kapitel > 0, `${kapitel} Kapitel sichtbar`);
@@ -92,12 +84,12 @@ try {
   // Download von der Startseite
   const [download] = await Promise.all([
     seite.waitForEvent("download", { timeout: 30000 }),
-    seite.locator(".lektion").first().getByRole("button", { name: "PDF", exact: true }).click()
+    seite.locator(".lektion").first().getByRole("link", { name: "PDF", exact: true }).click()
   ]);
   const ziel = path.join(WURZEL, "build", "pruefung-download.pdf");
   await download.saveAs(ziel);
   const kopf = fs.readFileSync(ziel).subarray(0, 5).toString();
-  pruefe(kopf === "%PDF-", `PDF-Download entschluesselt (${download.suggestedFilename()})`);
+  pruefe(kopf === "%PDF-", `PDF-Download funktioniert (${download.suggestedFilename()})`);
   pruefe(/^MI_[A-Za-z0-9_]+\.pdf$/.test(download.suggestedFilename()), "Dateiname nach Schema MI_<Kapitel>_<Lektion>_<Kurztitel>");
 
   console.log("Praesentationen");
@@ -159,13 +151,6 @@ try {
   if (bilderOrdner) await fenster.screenshot({ path: path.join(bilderOrdner, "referentenansicht.png") });
   await fenster.close();
 
-  console.log("Abmelden");
-  await seite.goto(BASIS + "start.html");
-  await seite.click("#abmelden");
-  await seite.waitForURL(/index\.html/);
-  await seite.goto(BASIS + links[0]);
-  await seite.waitForURL(/index\.html/);
-  pruefe(true, "Nach dem Abmelden ist keine Praesentation mehr erreichbar");
 } catch (e) {
   fehler++;
   console.error("  FEHLER " + e.message);
