@@ -20,20 +20,31 @@
     return null;
   }
 
-  /** Ersetzt Bildpfade wie bilder/foto.png durch entschluesselte Blob-Adressen. */
-  async function bilderEinsetzen(markdown, bilder) {
+  /** Ersetzt Bildpfade wie bilder/foto.png durch ihre Adresse auf der Website. */
+  function bilderEinsetzen(markdown, bilder) {
     var namen = Object.keys(bilder || {}).sort(function (a, b) {
       return b.length - a.length;
     });
-    for (var i = 0; i < namen.length; i++) {
-      var name = namen[i];
-      if (markdown.indexOf(name) === -1) continue;
-      var eintrag = bilder[name];
-      var bytes = await MiKrypto.datei(eintrag.datei);
-      var url = URL.createObjectURL(new Blob([bytes], { type: eintrag.typ }));
-      markdown = markdown.split(name).join(url);
-    }
+    namen.forEach(function (name) {
+      markdown = markdown.split(name).join(bilder[name].datei);
+    });
     return markdown;
+  }
+
+  function holen(adresse) {
+    return fetch(adresse, { cache: "no-cache" }).then(function (antwort) {
+      if (!antwort.ok) throw new Error("Datei nicht gefunden (" + antwort.status + ")");
+      return antwort;
+    });
+  }
+
+  function herunterladen(eintrag) {
+    var a = document.createElement("a");
+    a.href = eintrag.datei;
+    a.download = eintrag.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
   async function laden() {
@@ -41,23 +52,14 @@
       fehler("Im Link fehlt die Angabe, welche Präsentation gezeigt werden soll.");
       return;
     }
-    var index;
-    try {
-      index = await MiKrypto.index();
-    } catch (e) {
-      if (/Nicht angemeldet/.test(e.message)) {
-        location.replace("index.html?weiter=" + encodeURIComponent("praesentation.html" + location.search + location.hash));
-        return;
-      }
-      throw e;
-    }
+    var index = await (await holen("daten/index.json")).json();
     var lektion = suchen(index);
     if (!lektion) {
       fehler("Die Präsentation «" + pfad + "» gibt es nicht (mehr).");
       return;
     }
-    var markdown = new TextDecoder().decode(await MiKrypto.datei(lektion.md));
-    markdown = await bilderEinsetzen(markdown, lektion.bilder);
+    var markdown = await (await holen(lektion.md)).text();
+    markdown = bilderEinsetzen(markdown, lektion.bilder);
 
     var downloads = [];
     [
@@ -70,7 +72,7 @@
         downloads.push({
           text: d[1],
           aktion: function () {
-            return MiKrypto.herunterladen(eintrag);
+            herunterladen(eintrag);
           }
         });
       }
@@ -81,7 +83,7 @@
       titel: lektion.titel + " · Medien und Informatik",
       nummer: lektion.nummer,
       downloads: downloads,
-      startseite: "start.html",
+      startseite: "index.html",
       referent: parameter.get("referent") === "1" && !/receiver/i.test(location.search)
     });
   }

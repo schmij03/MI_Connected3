@@ -1,4 +1,4 @@
-/* Startseite: Kapitel und Lektionen aus dem verschluesselten Index anzeigen. */
+/* Startseite: Kapitel und Lektionen aus daten/index.json anzeigen. */
 (function () {
   "use strict";
 
@@ -37,21 +37,11 @@
   }
 
   function downloadKnopf(eintrag, text) {
-    var knopf = el("button", "knopf knopf-klein", text);
-    knopf.type = "button";
-    knopf.title = eintrag.name;
-    knopf.addEventListener("click", function () {
-      if (knopf.classList.contains("laedt")) return;
-      knopf.classList.add("laedt");
-      MiKrypto.herunterladen(eintrag)
-        .catch(function (fehler) {
-          alert("Der Download hat nicht geklappt: " + fehler.message);
-        })
-        .then(function () {
-          knopf.classList.remove("laedt");
-        });
-    });
-    return knopf;
+    var link = el("a", "knopf knopf-klein", text);
+    link.href = eintrag.datei;
+    link.setAttribute("download", eintrag.name);
+    link.title = eintrag.name;
+    return link;
   }
 
   function lektionKarte(lektion) {
@@ -168,12 +158,11 @@
     }
   }
 
-  document.getElementById("abmelden").addEventListener("click", function () {
-    MiKrypto.abmelden();
-    location.replace("index.html");
-  });
-
-  MiKrypto.index()
+  fetch("daten/index.json", { cache: "no-cache" })
+    .then(function (antwort) {
+      if (!antwort.ok) throw new Error("Verzeichnis nicht gefunden (" + antwort.status + ")");
+      return antwort.json();
+    })
     .then(function (index) {
       daten = index;
       daten.kapitel.forEach(function (k) {
@@ -196,10 +185,6 @@
       }
     })
     .catch(function (fehler) {
-      if (/Nicht angemeldet/.test(fehler.message)) {
-        location.replace("index.html?weiter=start.html");
-        return;
-      }
       inhalt.innerHTML = "";
       inhalt.appendChild(el("p", "ladeanzeige", "Fehler beim Laden: " + fehler.message));
     });

@@ -1,6 +1,6 @@
 # MI Präsentationen (connected 3, 1. Sek)
 
-Passwortgeschützte Website für alle Unterrichtspräsentationen in Medien und Informatik.
+Öffentliche Website für alle Unterrichtspräsentationen in Medien und Informatik.
 Die Präsentationen laufen im Browser (reveal.js) und lassen sich als PDF, PDF mit Notizen,
 PPTX und eigenständige HTML-Datei herunterladen.
 
@@ -8,9 +8,9 @@ PPTX und eigenständige HTML-Datei herunterladen.
 
 ```
 Dieses Repository (privat)                         Pages-Repository (öffentlich)
-quellen/   Original-PowerPoint                     index.html  Anmeldung
-inhalte/   Markdown, Bilder, kapitel.json  ──────► start.html, praesentation.html, css/, js/
-site/      Startseite, Viewer, Design     Build    daten/*.bin  alles verschlüsselt
+quellen/   Original-PowerPoint                     index.html  Startseite
+inhalte/   Markdown, Bilder, kapitel.json  ──────► praesentation.html, css/, js/
+site/      Startseite, Viewer, Design     Build    daten/      Präsentationen und Downloads
 tools/     Skripte                       (GitHub   robots.txt, .nojekyll
                                           Actions)
 ```
@@ -19,12 +19,12 @@ Bei jedem Push auf den Hauptbranch läuft `.github/workflows/build.yml`:
 
 1. Neue PowerPoint-Dateien in `quellen/` werden automatisch in Markdown umgewandelt.
 2. Für jede Präsentation entstehen HTML (offline), PDF, PDF mit Notizen und PPTX, pro Kapitel ein ZIP.
-3. Alles wird mit dem Passwort verschlüsselt (AES-256-GCM, Schlüssel aus PBKDF2-SHA-256 mit 600 000 Runden).
-4. Ein Browsertest prüft Anmeldung, Startseite, alle Präsentationen und die Downloads.
-5. Das Ergebnis geht mit dem Deploy Key ins Pages-Repository.
+3. Ein Browsertest prüft Startseite, alle Präsentationen und die Downloads.
+4. Das Ergebnis geht mit dem Deploy Key ins Pages-Repository.
 
-Im Pages-Repository steht kein lesbarer Inhalt: keine Titel, keine Texte, keine Bilder, keine Dateinamen.
-Wer das Passwort nicht kennt, sieht nur die Anmeldeseite und verschlüsselte `.bin`-Dateien.
+Die Website ist öffentlich: Wer die Adresse kennt, kann alle Präsentationen ansehen und herunterladen,
+auch die Original-PowerPoint-Dateien. `robots.txt` und `noindex` halten Suchmaschinen fern, sind aber kein Schutz.
+Die Arbeitsdateien in diesem Repository (`quellen/`, `inhalte/`) bleiben privat.
 
 ## Einrichtung (einmalig)
 
@@ -40,12 +40,9 @@ Wer das Passwort nicht kennt, sieht nur die Anmeldeseite und verschlüsselte `.b
    - In **diesem Repository** unter *Settings > Secrets and variables > Actions > New repository secret*
      ein Secret `PAGES_DEPLOY_KEY` mit dem Inhalt von `pages_key` (ohne `.pub`) anlegen.
    - Danach beide Dateien löschen.
-3. **Passwort festlegen:** ebenfalls als Secret, Name `SITE_PASSWORT`. Mindestens 12 Zeichen, am besten
-   mehrere Wörter. Wer das Passwort kennt, kann alles lesen. Es lässt sich jederzeit ändern: Secret neu setzen
-   und den Workflow unter *Actions > Website bauen > Run workflow* starten. Danach müssen sich alle neu anmelden.
-4. Heisst das Pages-Repository anders als `mi-praesentationen`, unter *Settings > Secrets and variables >
+3. Heisst das Pages-Repository anders als `mi-praesentationen`, unter *Settings > Secrets and variables >
    Actions > Variables* eine Variable `PAGES_REPOSITORY` mit `benutzer/name` anlegen.
-5. Einen Commit auf den Hauptbranch pushen oder den Workflow von Hand starten. Nach etwa drei Minuten ist die
+4. Einen Commit auf den Hauptbranch pushen oder den Workflow von Hand starten. Nach etwa drei Minuten ist die
    Seite unter `https://<benutzer>.github.io/mi-praesentationen/` erreichbar.
 
 ## Neue Präsentation ergänzen
@@ -180,30 +177,27 @@ Schrift: Calibri, sonst die metrisch gleiche Carlito (lokal in `site/fonts/`, SI
 ```
 npm ci                                              # einmalig (Node.js 20 oder neuer)
 npx playwright install chromium                     # einmalig
-node tools/build.mjs --passwort test1234            # alles bauen, --schnell ohne PDF/PPTX
+node tools/build.mjs                                # alles bauen, --schnell ohne PDF/PPTX
 npm run vorschau                                    # http://localhost:8080
-node tools/pruefen.mjs --passwort test1234          # Browsertest
+node tools/pruefen.mjs                              # Browsertest
 python -m unittest discover tools/tests             # Konvertertest
 ```
 
-`build/exporte/` enthält die unverschlüsselten Exporte zum Ansehen, `build/site/` die veröffentlichte Seite.
+`build/exporte/` enthält die Exporte zum Ansehen, `build/site/` die veröffentlichte Seite.
 Der Ordner `build/` wird nicht eingecheckt.
 
 ## Technik
 
 | Teil | Datei |
 |---|---|
-| Anmeldung, Startseite, Viewer | `site/index.html`, `site/start.html`, `site/praesentation.html?p=k1/l2-...` |
-| Entschlüsselung im Browser | `site/js/krypto.js` (Web Crypto API) |
+| Startseite, Viewer | `site/index.html`, `site/praesentation.html?p=k1/l2-...` |
 | Folienlayouts, Countdown, Download-Leiste | `site/js/folien.js`, `site/css/folien.css` |
 | reveal.js 5.2.1 mit Markdown, Notes, Zoom | `site/vendor/reveal.js-5.2.1/` (Referentenansicht übersetzt mit `tools/reveal_anpassen.mjs`) |
-| Build, Exporte, Verschlüsselung | `tools/build.mjs`, `tools/lib/` |
+| Build und Exporte | `tools/build.mjs`, `tools/lib/` |
 | PowerPoint zu Markdown | `tools/pptx_zu_md.py`, `tools/neue_quellen.py` |
 
 Das PPTX wird aus der Darstellung im Browser erzeugt: Jede Folie wird ausgemessen und mit echten Textfeldern,
 Tabellen und Bildern nachgebaut, damit sie in PowerPoint bearbeitbar bleibt.
 
-Hinweise zur Sicherheit: Die Verschlüsselung schützt die Inhalte gut, solange das Passwort stark ist. Nach dem
-Anmelden liegt der abgeleitete Schlüssel (nicht das Passwort) im Browser, bei «angemeldet bleiben» dauerhaft.
-Auf fremden Geräten deshalb immer «Abmelden». Die Exporte des Workflows (Artefakt «exporte») sind unverschlüsselt
-und nur für Personen mit Zugriff auf dieses private Repository sichtbar; sie werden nach 7 Tagen gelöscht.
+Die Exporte des Workflows (Artefakt «exporte») sind nur für Personen mit Zugriff auf dieses Repository sichtbar
+und werden nach 7 Tagen gelöscht.

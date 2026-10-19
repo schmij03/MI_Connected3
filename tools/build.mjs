@@ -4,11 +4,10 @@
  *   1. liest inhalte/kapitel.json und alle Markdown-Dateien
  *   2. erzeugt pro Praesentation HTML (offline), PDF, PDF mit Notizen und PPTX
  *   3. erzeugt pro Kapitel ein ZIP mit allen HTML-Exporten
- *   4. verschluesselt alles mit dem Passwort und schreibt die oeffentliche Seite nach build/site
+ *   4. schreibt die oeffentliche Seite mit allen Inhalten und Downloads nach build/site
  *
  * Aufruf:
- *   SITE_PASSWORT=geheim node tools/build.mjs
- *   node tools/build.mjs --passwort geheim [--schnell] [--nur k1/l2-bewertungen-datenstau]
+ *   node tools/build.mjs [--schnell] [--nur k1/l2-bewertungen-datenstau]
  *
  *   --schnell  ohne PDF und PPTX (fuer eine rasche Vorschau)
  *   --nur      nur diese Praesentation(en) exportieren (Pfad wie im Viewer, mehrfach moeglich)
@@ -19,7 +18,6 @@ import JSZip from "jszip";
 import { WURZEL, inhalteLaden, folienZaehlen } from "./lib/inhalte.mjs";
 import { offlineHtml } from "./lib/offline.mjs";
 import { browserStarten, exporteErstellen } from "./lib/exporte.mjs";
-import { RUNDEN, schluesselAbleiten, verschluesseln, geheimerName, neuesSalz } from "./lib/krypto.mjs";
 
 const TYP = {
   pdf: "application/pdf",
@@ -31,10 +29,9 @@ const TYP = {
 
 function argumente() {
   const a = process.argv.slice(2);
-  const optionen = { schnell: false, nur: [], passwort: process.env.SITE_PASSWORT || "", ausgabe: path.join(WURZEL, "build") };
+  const optionen = { schnell: false, nur: [], ausgabe: path.join(WURZEL, "build") };
   for (let i = 0; i < a.length; i++) {
     if (a[i] === "--schnell") optionen.schnell = true;
-    else if (a[i] === "--passwort") optionen.passwort = a[++i] || "";
     else if (a[i] === "--nur") optionen.nur.push((a[++i] || "").replace(/\.md$/, ""));
     else if (a[i] === "--ausgabe") optionen.ausgabe = path.resolve(a[++i]);
     else if (a[i] === "--hilfe" || a[i] === "-h") {
@@ -46,18 +43,6 @@ function argumente() {
     }
   }
   return optionen;
-}
-
-/** Salz und Runden fuer die Schluesselableitung. Bleiben gleich, damit Anmeldungen einen Build ueberleben. */
-function zugangsDaten() {
-  const datei = path.join(WURZEL, "tools", "zugang.json");
-  if (!fs.existsSync(datei)) {
-    const neu = { salz: neuesSalz(), runden: RUNDEN };
-    fs.writeFileSync(datei, JSON.stringify(neu, null, 2) + "\n");
-    console.log("Neues Salz in tools/zugang.json angelegt (bitte mit committen).");
-    return neu;
-  }
-  return JSON.parse(fs.readFileSync(datei, "utf8"));
 }
 
 function kopieren(von, nach) {
@@ -72,22 +57,8 @@ function leeren(ordner) {
 
 async function main() {
   const optionen = argumente();
-  if (!optionen.passwort) {
-    console.error(
-      "Es fehlt das Passwort.\n" +
-        "  Lokal:  node tools/build.mjs --passwort DEIN-PASSWORT\n" +
-        "  GitHub: Secret SITE_PASSWORT im Quell-Repository anlegen (siehe README)."
-    );
-    process.exit(1);
-  }
-  if (optionen.passwort.length < 8) {
-    console.warn("Warnung: Das Passwort ist kuerzer als 8 Zeichen. Ein laengeres Passwort ist deutlich sicherer.");
-  }
-
   const start = Date.now();
   const kapitel = inhalteLaden();
-  const zugang = zugangsDaten();
-  const schluessel = schluesselAbleiten(optionen.passwort, zugang.salz, zugang.runden);
 
   const EXPORTE = path.join(optionen.ausgabe, "exporte");
   const SITE = path.join(optionen.ausgabe, "site");
@@ -98,16 +69,12 @@ async function main() {
   fs.mkdirSync(EXPORTE, { recursive: true });
   fs.mkdirSync(DATEN, { recursive: true });
 
-  const geschrieben = new Set();
-  /** Verschluesselt Daten und gibt den Namen der .bin-Datei zurueck */
-  function ablegen(logischerPfad, daten) {
-    const puffer = Buffer.isBuffer(daten) ? daten : Buffer.from(daten);
-    const name = geheimerName(schluessel, logischerPfad, puffer);
-    if (!geschrieben.has(name)) {
-      fs.writeFileSync(path.join(DATEN, name), verschluesseln(schluessel, puffer));
-      geschrieben.add(name);
-    }
-    return name;
+  /** Legt eine Datei unter daten/ ab und gibt die Adresse relativ zur Startseite zurueck */
+  function ablegen(relativ, daten) {
+    const ziel = path.join(DATEN, relativ);
+    fs.mkdirSync(path.dirname(ziel), { recursive: true });
+    fs.writeFileSync(ziel, daten);
+    return "daten/" + relativ.split(path.sep).join("/");
   }
 
   const alleLektionen = kapitel.flatMap((k) => k.lektionen);
@@ -158,7 +125,7 @@ async function main() {
         const downloads = {};
         const anbieten = (schluesselName, datei, name, typ) => {
           if (!fs.existsSync(datei)) return;
-          downloads[schluesselName] = { datei: ablegen(`${l.pfad}/${schluesselName}`, fs.readFileSync(datei)), name, typ };
+          downloads[schluesselName] = { datei: ablegen(`${path.dirname(l.pfad)}/${name}`, fs.readFileSync(datei)), name, typ };
         };
         anbieten("pdf", dateien.pdf, l.basisName + ".pdf", TYP.pdf);
         anbieten("pdfNotizen", dateien.pdfNotizen, l.basisName + "_mit_Notizen.pdf", TYP.pdf);
@@ -174,7 +141,7 @@ async function main() {
 
         const bilder = {};
         for (const [verweis, b] of Object.entries(l.bilder)) {
-          bilder[verweis] = { datei: ablegen(`${l.pfad}/${verweis}`, fs.readFileSync(b.pfad)), typ: b.typ };
+          bilder[verweis] = { datei: ablegen(`${path.dirname(l.pfad)}/${verweis}`, fs.readFileSync(b.pfad)), typ: b.typ };
         }
 
         kapitelEintrag.lektionen.push({
@@ -197,7 +164,7 @@ async function main() {
         const zipName = `MI_${k.kuerzel}_offline.zip`;
         const zipDaten = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 9 } });
         fs.writeFileSync(path.join(EXPORTE, zipName), zipDaten);
-        kapitelEintrag.zip = { datei: ablegen(`${k.id}/zip`, zipDaten), name: zipName, typ: TYP.zip };
+        kapitelEintrag.zip = { datei: ablegen(`${k.id}/${zipName}`, zipDaten), name: zipName, typ: TYP.zip };
       }
       index.kapitel.push(kapitelEintrag);
     }
@@ -205,16 +172,12 @@ async function main() {
     if (browser) await browser.close();
   }
 
-  // Index und oeffentliche Zugangsdaten
-  const indexName = ablegen("index", JSON.stringify(index));
-  fs.writeFileSync(
-    path.join(DATEN, "zugang.json"),
-    JSON.stringify({ salz: zugang.salz, runden: zugang.runden, index: indexName }) + "\n"
-  );
+  // Verzeichnis aller Kapitel und Praesentationen fuer Startseite und Viewer
+  ablegen("index.json", JSON.stringify(index));
 
   // Oeffentliche Programmdateien
   const QUELLE = path.join(WURZEL, "site");
-  for (const datei of ["index.html", "start.html", "praesentation.html"]) {
+  for (const datei of ["index.html", "praesentation.html"]) {
     kopieren(path.join(QUELLE, datei), path.join(SITE, datei));
   }
   for (const ordner of ["css", "js", "fonts"]) kopieren(path.join(QUELLE, ordner), path.join(SITE, ordner));
@@ -225,19 +188,8 @@ async function main() {
   fs.writeFileSync(path.join(SITE, ".nojekyll"), "");
   fs.writeFileSync(path.join(SITE, "robots.txt"), "User-agent: *\nDisallow: /\n");
 
-  // Kontrolle: keine Klartext-Inhalte in der oeffentlichen Seite
-  const verboten = alleLektionen.map((l) => l.titel).filter((t) => t && t.length > 6);
-  for (const datei of fs.readdirSync(SITE, { recursive: true })) {
-    const voll = path.join(SITE, datei);
-    if (!fs.statSync(voll).isFile() || voll.endsWith(".bin") || voll.endsWith(".woff2")) continue;
-    const text = fs.readFileSync(voll, "utf8");
-    for (const titel of verboten) {
-      if (text.includes(titel)) throw new Error(`Sicherheitspruefung: Der Titel "${titel}" steht unverschluesselt in ${datei}.`);
-    }
-  }
-
   const sekunden = Math.round((Date.now() - start) / 1000);
-  console.log(`Fertig in ${sekunden} s. Oeffentliche Seite: ${path.relative(WURZEL, SITE)}  Exporte (Klartext, nicht veroeffentlicht): ${path.relative(WURZEL, EXPORTE)}`);
+  console.log(`Fertig in ${sekunden} s. Oeffentliche Seite: ${path.relative(WURZEL, SITE)}  Exporte: ${path.relative(WURZEL, EXPORTE)}`);
 }
 
 main().catch((e) => {

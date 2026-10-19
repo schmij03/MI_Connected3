@@ -1,6 +1,6 @@
 /*
  * Gemeinsame Grundlagen: Farben, Schrift und die Oberflaeche von
- * Anmeldeseite und Startseite. Die Farben stammen aus den PowerPoint-Vorlagen
+ * Startseite. Die Farben stammen aus den PowerPoint-Vorlagen
  * (Designfarben des Folienmasters, siehe README, Abschnitt "Farben").
  */
 
@@ -183,76 +183,6 @@ body.oberflaeche {
   font-weight: 400;
   font-size: 14px;
   opacity: 0.8;
-}
-
-/* Anmeldeseite */
-body.anmeldung {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 24px 16px;
-  background: var(--dunkelblau);
-}
-.anmelde-karte {
-  width: 100%;
-  max-width: 420px;
-  background: var(--weiss);
-  border-radius: 14px;
-  padding: 32px 28px 28px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  border-top: 6px solid var(--orange);
-}
-.anmelde-karte h1 {
-  margin: 0 0 4px;
-  font-size: 26px;
-  color: var(--petrol);
-}
-.anmelde-karte p {
-  margin: 0 0 20px;
-  color: var(--text-leise);
-}
-.feld {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 14px;
-}
-.feld label {
-  font-weight: 700;
-}
-.feld input[type="password"],
-.feld input[type="search"],
-.feld select {
-  width: 100%;
-  min-height: 44px;
-  padding: 8px 12px;
-  border: 1px solid #bfbfbf;
-  border-radius: 8px;
-  background: var(--weiss);
-  color: var(--text);
-}
-.ankreuzen {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 18px;
-  color: var(--text-leise);
-}
-.ankreuzen input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--petrol);
-}
-.anmelde-karte .knopf {
-  width: 100%;
-  min-height: 46px;
-}
-.meldung {
-  min-height: 1.4em;
-  margin: 12px 0 0;
-  font-weight: 700;
-}
-.meldung.fehler {
-  color: #b42318;
 }
 
 /* Startseite */
