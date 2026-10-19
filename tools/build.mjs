@@ -93,6 +93,8 @@ async function main() {
   const SITE = path.join(optionen.ausgabe, "site");
   const DATEN = path.join(SITE, "daten");
   leeren(SITE);
+  // Alte Exporte entfernen (bei --nur bleiben die anderen erhalten)
+  if (!optionen.nur.length && !optionen.schnell) leeren(EXPORTE);
   fs.mkdirSync(EXPORTE, { recursive: true });
   fs.mkdirSync(DATEN, { recursive: true });
 
@@ -162,7 +164,10 @@ async function main() {
         anbieten("pdfNotizen", dateien.pdfNotizen, l.basisName + "_mit_Notizen.pdf", TYP.pdf);
         anbieten("pptx", dateien.pptx, l.basisName + ".pptx", TYP.pptx);
         anbieten("html", dateien.html, l.basisName + ".html", TYP.html);
-        if (l.original) anbieten("original", l.original, l.basisName + "_Original.pptx", TYP.pptx);
+        l.originale.forEach((datei, i) => {
+          const teil = l.originale.length > 1 ? `_Teil${i + 1}` : "";
+          anbieten(i === 0 ? "original" : `original${i + 1}`, datei, `${l.basisName}_Original${teil}.pptx`, TYP.pptx);
+        });
 
         zip.file(l.basisName + ".html", html);
         zipLeer = false;

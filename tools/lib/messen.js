@@ -21,6 +21,11 @@ window.miFolienMessen = async function () {
       .toUpperCase();
   }
 
+  function radiusPx(wert, r) {
+    if (/%/.test(wert)) return (parseFloat(wert) / 100) * Math.min(r.w, r.h);
+    return px(wert);
+  }
+
   function px(wert) {
     var z = parseFloat(wert);
     return isNaN(z) ? 0 : z;
@@ -180,7 +185,7 @@ window.miFolienMessen = async function () {
       if (el.matches("td, th, table, tr, thead, tbody")) return;
       var r = rechteck(el, ursprung);
       var flaeche = farbeHex(cs.backgroundColor);
-      var radius = px(cs.borderTopLeftRadius);
+      var radius = radiusPx(cs.borderTopLeftRadius, r);
       if (flaeche) {
         var art = "rechteck";
         if (radius >= Math.min(r.w, r.h) / 2 - 1 && Math.abs(r.w - r.h) < 2) art = "ellipse";
@@ -318,7 +323,12 @@ window.miFolienMessen = async function () {
       }
       if (tag === "BLOCKQUOTE") hinweisSymbol(el);
 
-      if (tag === "UL" || tag === "OL") {
+      var listeMitKaesten =
+        (tag === "UL" || tag === "OL") &&
+        Array.prototype.some.call(el.children, function (li) {
+          return farbeHex(getComputedStyle(li).backgroundColor);
+        });
+      if ((tag === "UL" || tag === "OL") && !listeMitKaesten) {
         var absaetze = [];
         liste(el, 0, absaetze);
         if (absaetze.length) {
@@ -335,8 +345,11 @@ window.miFolienMessen = async function () {
         var ri = inhaltsRechteck(el, ursprung);
         var absatz = absatzVon(el);
         absatz.abstandNach = 0;
+        var zentriert = /flex|grid/.test(cs.display) && cs.justifyContent === "center";
+        var mittig = /flex|grid/.test(cs.display) && cs.alignItems === "center";
+        if (zentriert) absatz.ausrichtung = "center";
         var zeilen = Math.round(ri.h / (absatz.zeilenhoehe * absatz.groesse));
-        formen.push({ art: "text", x: ri.x, y: ri.y, w: ri.w, h: ri.h, einzeilig: zeilen <= 1, absaetze: [absatz] });
+        formen.push({ art: "text", x: ri.x, y: ri.y, w: ri.w, h: ri.h, einzeilig: zeilen <= 1, mitte: mittig, absaetze: [absatz] });
         pseudoNachher(el);
         var innereBilder = el.querySelectorAll("img, svg");
         for (var j = 0; j < innereBilder.length; j++) await bild(innereBilder[j]);

@@ -40,7 +40,7 @@
     { muster: /^zeit(dauer)?$/i, icon: "uhr", text: "Zeit" },
     { muster: /^sozialform$/i, icon: "personen", text: "Sozialform" },
     { muster: /^material(ien)?$/i, icon: "material", text: "Material" },
-    { muster: /^(arbeitsbuch|ab|buch|lehrmittel)$/i, icon: "buch", text: "Arbeitsbuch" }
+    { muster: /^(arbeitsbuch|buch|lehrmittel|arbeitsheft)$/i, icon: "buch", text: "Arbeitsbuch" }
   ];
 
   function farbe(name, ersatz) {
@@ -97,6 +97,36 @@
         p.classList.add(p.querySelectorAll("img").length > 1 ? "bilder-reihe" : "nur-bild");
       }
     });
+    // Automatisch erkannte Webadressen (www.srf.ch) nicht als Link, nur ausdrueckliche Links
+    folie.querySelectorAll("a[href]").forEach(function (a) {
+      if (a.children.length === 0 && a.textContent.indexOf("://") === -1 && /^https?:\/\/(www\.)?/.test(a.getAttribute("href")) &&
+          a.getAttribute("href").replace(/^https?:\/\//, "").replace(/\/$/, "") === a.textContent.replace(/\/$/, "")) {
+        a.replaceWith(document.createTextNode(a.textContent));
+      }
+    });
+    // Videos (YouTube) im Overlay auf der Folie abspielen, andere Links in neuem Tab
+    folie.querySelectorAll("a[href]").forEach(function (a) {
+      var m = a.getAttribute("href").match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube(?:-nocookie)?\.com\/embed\/)([\w-]{6,})/);
+      if (m) {
+        a.setAttribute("data-preview-link", "https://www.youtube-nocookie.com/embed/" + m[1] + "?autoplay=1&rel=0");
+        a.classList.add("video-link");
+        a.title = "Video abspielen";
+      } else {
+        a.target = "_blank";
+        a.rel = "noopener";
+      }
+    });
+    // "1. Falsch:", "Richtig:" usw. am Anfang eines fetten Textes farbig hervorheben
+    folie.querySelectorAll("strong").forEach(function (st) {
+      var erster = st.firstChild;
+      if (!erster || erster.nodeType !== 3) return;
+      var m = erster.nodeValue.match(/^\s*(?:\d+\.\s*)?(richtig|falsch|möglich|unwahrscheinlich)\s*:?/i);
+      if (!m) return;
+      var wort = el("span", "wort-" + m[1].toLowerCase().replace("ö", "oe"));
+      wort.textContent = m[0];
+      erster.nodeValue = erster.nodeValue.slice(m[0].length);
+      st.insertBefore(wort, erster);
+    });
     // Bilder: Alternativtext als Titel, damit er beim Ueberfahren sichtbar ist
     folie.querySelectorAll("img").forEach(function (img) {
       if (img.alt && !img.title) img.title = img.alt;
@@ -109,7 +139,7 @@
     if (!minuten) return;
     folie.setAttribute("data-zeit", String(minuten));
     if (folie.querySelector(":scope > .zeit-badge")) return;
-    var badge = el("div", "zeit-badge", ICONS.uhr + "<span>" + zeitText(minuten) + "</span>");
+    var badge = el("div", "zeit-badge", "<span>" + zeitText(minuten) + "</span>");
     badge.title = "Countdown starten (Taste T)";
     badge.setAttribute("role", "button");
     folie.insertBefore(badge, folie.firstChild);
@@ -118,24 +148,46 @@
   // ---------- Layouts ----------
 
   function layoutTitel(folie, optionen) {
-    folie.setAttribute("data-background-color", farbe("--dunkelblau", "#1f3864"));
+    folie.setAttribute("data-background-color", farbe("--dunkelblau", "#21295c"));
     var nummer = folie.getAttribute("data-nummer") || optionen.nummer;
+    var hatNummer = nummer && String(nummer) !== "0" && String(nummer).toLowerCase() !== "keine";
     var text = el("div", "titel-text");
+    var fuss = null;
     inhaltsKinder(folie).forEach(function (k) {
-      if (!k.classList.contains("zeit-badge")) text.appendChild(k);
+      if (k.classList.contains("zeit-badge")) return;
+      // Alles nach einer Linie (***) steht klein am unteren Rand
+      if (k.tagName === "HR") {
+        fuss = el("div", "titel-fuss");
+        k.remove();
+        return;
+      }
+      (fuss || text).appendChild(k);
     });
-    if (nummer && String(nummer) !== "0" && String(nummer).toLowerCase() !== "keine") {
-      var kreis = el(
-        "div",
-        "nummer-kreis",
-        '<span class="nummer-wort">Lektion</span><span class="nummer-zahl"></span>'
-      );
-      kreis.querySelector(".nummer-zahl").textContent = nummer;
-      folie.insertBefore(kreis, folie.querySelector("aside.notes"));
+    var notizen = folie.querySelector("aside.notes");
+    if (hatNummer) {
+      var kreis = el("div", "nummer-kreis");
+      kreis.textContent = nummer;
+      folie.insertBefore(kreis, notizen);
+      var marke = el("p", "titel-lektion");
+      marke.textContent = "Lektion " + nummer;
+      text.insertBefore(marke, text.firstChild);
     } else {
       folie.classList.add("ohne-nummer");
     }
-    folie.insertBefore(text, folie.querySelector("aside.notes"));
+    folie.insertBefore(text, notizen);
+    if (fuss) folie.insertBefore(fuss, notizen);
+  }
+
+  function layoutFrage(folie) {
+    if (!folie.hasAttribute("data-background-color")) {
+      folie.setAttribute("data-background-color", farbe("--petrol", "#065a82"));
+    }
+  }
+
+  function layoutKennzahl(folie) {
+    if (!folie.hasAttribute("data-background-color")) {
+      folie.setAttribute("data-background-color", farbe("--hellblau", "#f4f8fa"));
+    }
   }
 
   function layoutMerke(folie) {
@@ -158,9 +210,21 @@
     var karten = [];
     var aktuell = null;
     var ersteKarte = null;
+    var nachher = null;
     kinder.forEach(function (k) {
-      if (k.tagName === "H3") {
+      // *** nach den Karten: was folgt, steht wieder unter den Karten
+      if (k.tagName === "HR" && karten.length && !nachher) {
+        aktuell = null;
+        nachher = k;
+        return;
+      }
+      if (k.tagName === "H3" && !nachher) {
         aktuell = el("div", "karte");
+        // <!-- .element: class="hervor" --> nach der Ueberschrift hebt die Karte hervor
+        if (k.classList.contains("hervor")) {
+          k.classList.remove("hervor");
+          aktuell.classList.add("hervor");
+        }
         karten.push(aktuell);
         if (!ersteKarte) ersteKarte = k;
       }
@@ -170,11 +234,24 @@
     });
     if (!karten.length) return;
     var reihe = el("div", "karten-reihe");
-    reihe.style.setProperty("--anzahl", String(Math.min(Math.max(karten.length, 1), 4)));
-    karten.forEach(function (karte) {
+    // Bis 4 Karten in einer Reihe, sonst Reihen zu 3 oder 4
+    var n = karten.length;
+    var spalten = parseInt(folie.getAttribute("data-spalten"), 10) || (n <= 4 ? n : n % 3 === 0 || n === 5 ? 3 : 4);
+    reihe.style.setProperty("--anzahl", String(spalten));
+    karten.forEach(function (karte, i) {
+      if (folie.classList.contains("nummeriert")) {
+        var nr = el("div", "karten-nummer");
+        nr.textContent = String(i + 1);
+        karte.insertBefore(nr, karte.firstChild);
+      }
       reihe.appendChild(karte);
     });
     // Die Reihe steht dort, wo die erste Karte begann
+    if (nachher) {
+      folie.insertBefore(reihe, nachher);
+      nachher.remove();
+      return;
+    }
     var danach = null;
     var kinderJetzt = inhaltsKinder(folie);
     for (var i = 0; i < kinderJetzt.length; i++) {
@@ -257,9 +334,12 @@
     var marke = el("div", "auftrag-marke", "Auftrag");
     seite.appendChild(marke);
     var dl = el("dl");
+    seite.appendChild(dl);
     eintraege.forEach(function (e) {
       if (e.art.text === "Auftrag") {
-        marke.textContent = "Auftrag " + e.wert;
+        var nr = el("div", "auftrag-nummer");
+        nr.textContent = e.wert;
+        seite.insertBefore(nr, dl);
         return;
       }
       var dt = el("dt", null, ICONS[e.art.icon] + "<span></span>");
@@ -272,7 +352,6 @@
         if (minuten) folie.setAttribute("data-zeit", String(minuten));
       }
     });
-    seite.appendChild(dl);
     if (liste) liste.remove();
 
     var haupt = el("div", "auftrag-haupt");
@@ -285,6 +364,20 @@
     folie.insertBefore(haupt, notizen);
   }
 
+  function layoutZiele(folie) {
+    folie.querySelectorAll(":scope > ol").forEach(function (ol) {
+      var start = parseInt(ol.getAttribute("start") || "1", 10);
+      Array.prototype.forEach.call(ol.children, function (li, i) {
+        var nr = el("span", "ziel-nummer");
+        nr.textContent = String(start + i);
+        var text = el("span", "ziel-text");
+        while (li.firstChild) text.appendChild(li.firstChild);
+        li.appendChild(nr);
+        li.appendChild(text);
+      });
+    });
+  }
+
   /** Baut eine Folie gemaess ihren Klassen um. Wird einmal pro Folie ausgefuehrt. */
   function aufbereiten(folie, optionen) {
     if (folie.getAttribute("data-mi-fertig")) return;
@@ -292,8 +385,14 @@
     var kl = folie.classList;
     allgemein(folie);
     if (kl.contains("titel")) layoutTitel(folie, optionen);
+    if (kl.contains("frage")) layoutFrage(folie);
+    if (kl.contains("kennzahl")) {
+      layoutKennzahl(folie);
+      layoutSpalten(folie);
+    }
     if (kl.contains("merke")) layoutMerke(folie);
     if (kl.contains("karten")) layoutKarten(folie);
+    if (kl.contains("ziele")) layoutZiele(folie);
     if (kl.contains("spalten")) layoutSpalten(folie);
     if (kl.contains("auftrag")) layoutAuftrag(folie);
     if (kl.contains("loesung")) layoutLoesung(folie);

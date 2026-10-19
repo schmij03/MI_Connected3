@@ -94,7 +94,16 @@
     var zeile2 = el("div", "aktionen-zeile");
     DOWNLOADS.forEach(function (d) {
       var eintrag = lektion.downloads && lektion.downloads[d.schluessel];
-      if (eintrag) zeile2.appendChild(downloadKnopf(eintrag, d.text));
+      if (!eintrag) return;
+      var text = d.text;
+      // Mehrere Originale (Praesentation aus mehreren PowerPoint-Dateien)
+      if (d.schluessel === "original" && lektion.downloads.original2) text = "Original Teil 1 (.pptx)";
+      zeile2.appendChild(downloadKnopf(eintrag, text));
+      if (d.schluessel === "original") {
+        for (var i = 2; lektion.downloads["original" + i]; i++) {
+          zeile2.appendChild(downloadKnopf(lektion.downloads["original" + i], "Original Teil " + i + " (.pptx)"));
+        }
+      }
     });
     aktionen.appendChild(zeile2);
     karte.appendChild(aktionen);

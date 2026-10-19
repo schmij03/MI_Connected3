@@ -63,7 +63,7 @@ def aus_dateiname(name: str) -> tuple[str | None, str | None]:
 
 def main() -> int:
     daten = json.loads((konverter.INHALTE / "kapitel.json").read_text(encoding="utf-8"))
-    bekannt = {l.get("original") for k in daten["kapitel"] for l in k.get("lektionen", [])}
+    bekannt = {o for k in daten["kapitel"] for l in k.get("lektionen", []) for o in ([l["original"]] if isinstance(l.get("original"), str) else l.get("original") or [])}
     kapitel_ids = {k["id"] for k in daten["kapitel"]}
     meldungen = []
     neu = 0

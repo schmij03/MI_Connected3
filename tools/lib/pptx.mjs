@@ -27,7 +27,7 @@ function absatzLaeufe(absatz, istLetzter) {
     absatzOptionen.bullet =
       absatz.aufzaehlung === "zahl"
         ? { type: "number", numberStartAt: absatz.start || 1, indent: einzug }
-        : { code: "25A0", indent: einzug };
+        : { code: "2022", indent: einzug };
     if (absatz.ebene) absatzOptionen.indentLevel = absatz.ebene;
   }
   const laeufe = absatz.laeufe.length ? absatz.laeufe : [{ text: " ", groesse: absatz.groesse, farbe: absatz.farbe }];
@@ -162,15 +162,15 @@ export async function pptxErstellen(folien, meta) {
   return aufzaehlungenFaerben(puffer);
 }
 
-/** Aufzaehlungszeichen und Nummern orange wie im Browser (pptxgenjs kennt dafuer keine Option) */
+/** Aufzaehlungszeichen und Nummern in Textfarbe wie im Browser (pptxgenjs kennt dafuer keine Option) */
 async function aufzaehlungenFaerben(puffer) {
   const zip = await JSZip.loadAsync(puffer);
-  const farbe = '<a:buClr><a:srgbClr val="ED7D31"/></a:buClr>';
+  const farbe = '<a:buClr><a:srgbClr val="1F2933"/></a:buClr>';
   for (const name of Object.keys(zip.files)) {
     if (!/^ppt\/slides\/slide\d+\.xml$/.test(name)) continue;
     let xml = await zip.file(name).async("string");
     xml = xml
-      .replace(/<a:buChar /g, farbe + '<a:buSzPct val="80000"/><a:buChar ')
+      .replace(/<a:buChar /g, farbe + '<a:buSzPct val="100000"/><a:buChar ')
       .replace(/<a:buAutoNum /g, farbe + "<a:buAutoNum ");
     zip.file(name, xml);
   }

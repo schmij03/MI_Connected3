@@ -72,7 +72,7 @@ class KonverterTest(unittest.TestCase):
 
     def test_kapitel_json(self):
         k1 = next(k for k in self.json["kapitel"] if k["id"] == "k1")
-        eintrag = k1["lektionen"][0]
+        eintrag = next(l for l in k1["lektionen"] if l["id"] == "l2-bewertungen")
         self.assertEqual(eintrag["titel"], "Kann man Bewertungen trauen?")
         self.assertEqual(eintrag["niveau"], "B")
         self.assertEqual(eintrag["datum"], "2026-09-22")
