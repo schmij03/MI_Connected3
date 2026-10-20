@@ -875,6 +875,11 @@
 .mi-dialog-karte p {
   margin: 0 0 16px;
 }
+.mi-dialog-karte .mi-meldung {
+  padding: 10px 14px;
+  border-left: 4px solid var(--orange);
+  background: var(--hellblau);
+}
 .mi-dialog-karte .knoepfe {
   display: flex;
   flex-wrap: wrap;

@@ -1,6 +1,6 @@
 /*
  * MiFolien: reveal.js-Plugin fuer die Folienlayouts, den Countdown,
- * die Download-Leiste und den Hinweis zur Referentenansicht.
+ * die Download-Leiste, die Referentenansicht und die Aufteilung auf Beamer und Laptop.
  *
  * Wird im Viewer und im Offline-HTML-Export gleich verwendet.
  * Muss in der Plugin-Liste NACH RevealMarkdown stehen, weil es die
@@ -9,7 +9,7 @@
  * Optionen:
  *   nummer      Lektionsnummer fuer den Kreis auf der Titelfolie
  *   downloads   [{ text, aktion }] fuer die Download-Leiste (leer = keine Leiste)
- *   referent    true = Hinweis zum Oeffnen der Referentenansicht zeigen
+ *   referent    true = Dialog fuer Beamer und Referentenansicht zeigen
  *   startseite  Link zurueck zur Startseite (optional)
  */
 (function () {
@@ -546,31 +546,156 @@
     return { umschalten: umschalten };
   }
 
-  // ---------- Referentenansicht ----------
+  // ---------- Referentenansicht und Beamer ----------
+  // Wie in PowerPoint: Praesentation im Vollbild auf dem Beamer, Referentenansicht auf dem Laptop.
+  // Braucht die Window Management API (Chrome, Edge) und einen erweiterten, nicht gespiegelten Bildschirm.
 
-  function referentenHinweis(deck) {
+  var BEAMER_MELDUNG = {
+    browser:
+      "Dieser Browser kann die Fenster nicht selbst auf Beamer und Laptop verteilen. Das geht in Chrome und Edge. " +
+      "Sonst: Referentenansicht öffnen, dieses Fenster auf den Beamer ziehen und dort <kbd>F</kbd> drücken.",
+    erlaubnis:
+      "Der Browser darf die Bildschirme nicht verwenden. Über das Symbol links neben der Adresse " +
+      "«Fensterverwaltung» erlauben und nochmals versuchen.",
+    nochmals: "Danke für die Erlaubnis. Jetzt nochmals auf «Auf Beamer präsentieren» klicken.",
+    ein:
+      "Es ist nur ein Bildschirm erkannt. Beamer anschliessen und auf «Erweitern» statt «Duplizieren» stellen: " +
+      "unter Windows mit <kbd>Windows</kbd> + <kbd>P</kbd>, am Mac unter Systemeinstellungen > Displays.",
+    vollbild: "Der Beamer konnte nicht auf Vollbild geschaltet werden. Bitte nochmals versuchen.",
+    popup:
+      "Die Präsentation läuft auf dem Beamer, die Referentenansicht wurde aber blockiert. " +
+      "Pop-ups für diese Seite erlauben und <kbd>S</kbd> drücken."
+  };
+
+  function bildschirmErlaubnis() {
+    if (!navigator.permissions) return Promise.resolve("prompt");
+    return navigator.permissions.query({ name: "window-management" }).then(
+      function (s) {
+        return s.state;
+      },
+      function () {
+        return "prompt";
+      }
+    );
+  }
+
+  /** Oeffnet die Referentenansicht, auf Wunsch fensterfuellend auf einem bestimmten Bildschirm. */
+  function notizenOeffnen(deck, bildschirm) {
+    var notes = deck.getPlugin("notes");
+    if (!notes) return false;
+    var vorher = window.miNotizen;
+    if (bildschirm) {
+      window.miNotizenFenster =
+        "left=" + bildschirm.availLeft + ",top=" + bildschirm.availTop +
+        ",width=" + bildschirm.availWidth + ",height=" + bildschirm.availHeight;
+    }
+    try {
+      notes.open();
+    } catch (e) {
+      // Pop-up blockiert
+    }
+    window.miNotizenFenster = undefined;
+    var fenster = window.miNotizen;
+    if (!fenster || fenster.closed) return false;
+    if (bildschirm && fenster === vorher) {
+      // War schon offen: auf den Laptop holen
+      try {
+        fenster.moveTo(bildschirm.availLeft, bildschirm.availTop);
+        fenster.resizeTo(bildschirm.availWidth, bildschirm.availHeight);
+      } catch (e) {
+        // egal, das Fenster ist offen
+      }
+    }
+    return true;
+  }
+
+  /** Verteilt Praesentation und Referentenansicht. Liefert "ok" oder einen Schluessel aus BEAMER_MELDUNG. */
+  function aufBeamer(deck) {
+    if (!window.getScreenDetails) return Promise.resolve("browser");
+    return bildschirmErlaubnis().then(function (zustand) {
+      if (zustand === "denied") return "erlaubnis";
+      return window.getScreenDetails().then(
+        function (details) {
+          var alle = details.screens;
+          if (alle.length < 2) return "ein";
+          // Nach der ersten Erlaubnis ist der Klick oft schon verbraucht
+          if (zustand !== "granted" && navigator.userActivation && !navigator.userActivation.isActive) return "nochmals";
+          var laptop =
+            alle.filter(function (s) {
+              return s.isInternal;
+            })[0] || details.currentScreen;
+          var andere = alle.filter(function (s) {
+            return s !== laptop;
+          });
+          var beamer =
+            andere.filter(function (s) {
+              return !s.isInternal;
+            })[0] || andere[0];
+          // Zuerst Vollbild, dann das Fenster: so erlaubt Chrome beides mit einem Klick
+          var vollbild = document.documentElement.requestFullscreen({ screen: beamer });
+          var offen = notizenOeffnen(deck, laptop);
+          return vollbild.then(
+            function () {
+              return offen ? "ok" : "popup";
+            },
+            function () {
+              return "vollbild";
+            }
+          );
+        },
+        function () {
+          return "erlaubnis";
+        }
+      );
+    });
+  }
+
+  function referentenDialog(deck, meldung) {
+    var alt = document.querySelector(".mi-dialog");
+    if (alt) alt.remove();
+    var kannBeamer = !!window.getScreenDetails;
+    var text = meldung
+      ? "<p class=\"mi-meldung\">" + meldung + "</p>"
+      : "<p>Mit «Auf Beamer präsentieren» erscheint die Präsentation im Vollbild auf dem Beamer " +
+        "und die Referentenansicht mit Notizen, nächster Folie und Uhr auf dem Laptop. Dafür den Bildschirm " +
+        "erweitern, nicht spiegeln.</p>" +
+        "<p>Später jederzeit mit <kbd>M</kbd> (Beamer) oder <kbd>S</kbd> (nur Referentenansicht).</p>";
     var dialog = el(
       "div",
       "mi-dialog",
       '<div class="mi-dialog-karte" role="dialog" aria-modal="true" aria-labelledby="mi-ref-titel">' +
-        '<h2 id="mi-ref-titel">Referentenansicht</h2>' +
-        "<p>Die Referentenansicht öffnet sich in einem eigenen Fenster mit Notizen, nächster Folie und Uhr. " +
-        "Ziehe dieses Fenster hier auf den Beamer und drücke dort <kbd>F</kbd> für Vollbild.</p>" +
-        "<p>Später jederzeit mit der Taste <kbd>S</kbd>.</p>" +
-        '<div class="knoepfe"><button type="button" class="haupt">Referentenansicht öffnen</button>' +
-        '<button type="button" class="nein">Nur präsentieren</button></div></div>'
+        '<h2 id="mi-ref-titel">Präsentieren</h2>' +
+        text +
+        '<div class="knoepfe">' +
+        '<button type="button" class="beamer' + (kannBeamer ? " haupt" : "") + '">Auf Beamer präsentieren</button>' +
+        '<button type="button" class="referent' + (kannBeamer ? "" : " haupt") + '">Nur Referentenansicht</button>' +
+        '<button type="button" class="nein">Schliessen</button></div></div>'
     );
     document.body.appendChild(dialog);
     function schliessen() {
       dialog.remove();
     }
-    dialog.querySelector(".haupt").addEventListener("click", function () {
-      var notes = deck.getPlugin("notes");
-      if (notes) notes.open();
+    dialog.querySelector(".beamer").addEventListener("click", function () {
+      beamerStarten(deck);
+    });
+    dialog.querySelector(".referent").addEventListener("click", function () {
+      notizenOeffnen(deck);
       schliessen();
     });
     dialog.querySelector(".nein").addEventListener("click", schliessen);
     dialog.querySelector(".haupt").focus();
+  }
+
+  function beamerStarten(deck) {
+    return aufBeamer(deck).then(function (ergebnis) {
+      if (ergebnis === "ok") {
+        var dialog = document.querySelector(".mi-dialog");
+        if (dialog) dialog.remove();
+      } else {
+        referentenDialog(deck, BEAMER_MELDUNG[ergebnis]);
+      }
+      return ergebnis;
+    });
   }
 
   // ---------- Plugin ----------
@@ -609,9 +734,12 @@
           deck.addKeyBinding({ keyCode: 68, key: "D", description: "Download-Leiste ein-/ausblenden" }, leiste.umschalten);
         }
 
+        deck.addKeyBinding({ keyCode: 77, key: "M", description: "Auf Beamer präsentieren, Referentenansicht auf dem Laptop" }, function () {
+          beamerStarten(deck);
+        });
         if (optionen.referent) {
           deck.on("ready", function () {
-            referentenHinweis(deck);
+            referentenDialog(deck);
           });
         }
       },
