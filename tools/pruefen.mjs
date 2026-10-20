@@ -138,8 +138,8 @@ try {
 
   console.log("Referentenansicht");
   await seite.goto(BASIS + links[0] + "&referent=1");
-  await seite.waitForSelector(".mi-dialog button.haupt");
-  const [fenster] = await Promise.all([kontext.waitForEvent("page"), seite.click(".mi-dialog button.haupt")]);
+  await seite.waitForSelector(".mi-dialog button.referent");
+  const [fenster] = await Promise.all([kontext.waitForEvent("page"), seite.click(".mi-dialog button.referent")]);
   await fenster.waitForSelector("#current-slide iframe", { timeout: 20000 });
   const rahmen = fenster.frames().find((f) => /receiver/.test(f.url()));
   await rahmen.waitForFunction(() => window.Reveal && Reveal.isReady(), null, { timeout: 30000 });
@@ -150,6 +150,32 @@ try {
   pruefe(notizen !== null, "Notizenbereich vorhanden");
   if (bilderOrdner) await fenster.screenshot({ path: path.join(bilderOrdner, "referentenansicht.png") });
   await fenster.close();
+
+  console.log("Beamer und Laptop");
+  // Zwei Bildschirme simulieren: Laptop (eingebaut) links, Beamer rechts. Headless zeigt das Vollbild
+  // nicht wirklich auf dem zweiten Bildschirm, geprueft wird die Verteilung der Fenster.
+  const zwei = await chromium.launch({
+    ...(process.env.CHROMIUM_PFAD ? { executablePath: process.env.CHROMIUM_PFAD } : {}),
+    args: ["--screen-info={0,0 1280x800 isInternal=1}{1280,0 1920x1080}"]
+  });
+  try {
+    const kontext2 = await zwei.newContext({ viewport: null });
+    const seite2 = await kontext2.newPage();
+    const { targetInfo } = await (await kontext2.newCDPSession(seite2)).send("Target.getTargetInfo");
+    await (await zwei.newBrowserCDPSession()).send("Browser.grantPermissions", {
+      permissions: ["windowManagement"],
+      origin: BASIS.replace(/\/$/, ""),
+      browserContextId: targetInfo.browserContextId
+    });
+    await seite2.goto(BASIS + links[0] + "&referent=1");
+    await seite2.waitForSelector(".mi-dialog button.beamer");
+    const [notizen2] = await Promise.all([kontext2.waitForEvent("page"), seite2.click(".mi-dialog button.beamer")]);
+    await notizen2.waitForSelector("#current-slide iframe", { timeout: 20000 });
+    const lage = await notizen2.evaluate(() => [screenX, screenY, outerWidth, outerHeight]);
+    pruefe(lage.join() === "0,0,1280,800", `Referentenansicht füllt den Laptop (${lage.join(", ")})`);
+  } finally {
+    await zwei.close();
+  }
 
   console.log("Interaktive Tafel");
   seitenFehler.length = 0;

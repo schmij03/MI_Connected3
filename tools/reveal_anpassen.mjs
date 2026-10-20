@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Uebersetzt die Referentenansicht von reveal.js (plugin/notes.js) ins Deutsche
-// und stellt die Uhr auf 24 Stunden um. Kann mehrfach ausgefuehrt werden.
+// und stellt die Uhr auf 24 Stunden um. Ausserdem lassen sich Lage und Groesse des Fensters
+// ueber window.miNotizenFenster vorgeben (fuer Beamer und Laptop, siehe site/js/folien.js). Kann mehrfach ausgefuehrt werden.
 // Nach einem Update von reveal.js einmal ausfuehren: node tools/reveal_anpassen.mjs
 import fs from "node:fs";
 import path from "node:path";
@@ -25,7 +26,11 @@ const ERSETZEN = [
   ],
   ["Cross origin error.<br>The speaker window can only be opened from the same origin.", "Die Referentenansicht kann nur aus derselben Website geöffnet werden."],
   ["Error connecting to main window.<br>Please try closing and reopening the speaker view.", "Keine Verbindung zur Präsentation.<br>Bitte dieses Fenster schliessen und mit S neu öffnen."],
-  ["Loading speaker view...", "Referentenansicht wird geladen …"]
+  ["Loading speaker view...", "Referentenansicht wird geladen …"],
+  [
+    'n=window.open("about:blank","reveal.js - Notes","width=1100,height=700"),',
+    'n=window.open("about:blank","reveal.js - Notes",window.miNotizenFenster||"width=1100,height=700"),window.miNotizen=n,'
+  ]
 ];
 
 let text = fs.readFileSync(DATEI, "utf8");
