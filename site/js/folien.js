@@ -550,18 +550,26 @@
   // Wie in PowerPoint: Praesentation im Vollbild auf dem Beamer, Referentenansicht auf dem Laptop.
   // Braucht die Window Management API (Chrome, Edge) und einen erweiterten, nicht gespiegelten Bildschirm.
 
+  var MAC = /Mac/i.test(navigator.platform || navigator.userAgent);
+  var ERWEITERN = MAC
+    ? "Am Mac mit <kbd>Cmd</kbd> + <kbd>F1</kbd> (oder Kontrollzentrum > Bildschirm > «Erweitern»)."
+    : "Unter Windows mit <kbd>Windows</kbd> + <kbd>P</kbd>, dann «Erweitern».";
+
   var BEAMER_MELDUNG = {
     browser:
-      "Dieser Browser kann die Fenster nicht selbst auf Beamer und Laptop verteilen. Das geht in Chrome und Edge. " +
-      "Sonst: Referentenansicht öffnen, dieses Fenster auf den Beamer ziehen und dort <kbd>F</kbd> drücken.",
+      "Dieser Browser kann die Fenster nicht selbst auf Beamer und Laptop verteilen. Das geht in Chrome und Edge" +
+      (MAC ? ", nicht in Safari" : "") +
+      ". Sonst: Referentenansicht öffnen, dieses Fenster auf den Beamer ziehen und dort <kbd>F</kbd> drücken.",
     erlaubnis:
       "Der Browser darf die Bildschirme nicht verwenden. Über das Symbol links neben der Adresse " +
       "«Fensterverwaltung» erlauben und nochmals versuchen.",
     nochmals: "Danke für die Erlaubnis. Jetzt nochmals auf «Auf Beamer präsentieren» klicken.",
     ein:
-      "Es ist nur ein Bildschirm erkannt. Beamer anschliessen und auf «Erweitern» statt «Duplizieren» stellen: " +
-      "unter Windows mit <kbd>Windows</kbd> + <kbd>P</kbd>, am Mac unter Systemeinstellungen > Displays.",
-    vollbild: "Der Beamer konnte nicht auf Vollbild geschaltet werden. Bitte nochmals versuchen.",
+      "Es ist nur ein Bildschirm erkannt. Beamer anschliessen und den Bildschirm erweitern statt spiegeln. " +
+      ERWEITERN,
+    vollbild:
+      "Der Beamer konnte nicht auf Vollbild geschaltet werden. Bitte nochmals versuchen." +
+      (MAC ? " Falls ein Bildschirm schwarz bleibt: Systemeinstellungen > Schreibtisch & Dock > «Monitore verwenden verschiedene Spaces» einschalten." : ""),
     popup:
       "Die Präsentation läuft auf dem Beamer, die Referentenansicht wurde aber blockiert. " +
       "Pop-ups für diese Seite erlauben und <kbd>S</kbd> drücken."
@@ -658,7 +666,7 @@
       ? "<p class=\"mi-meldung\">" + meldung + "</p>"
       : "<p>Mit «Auf Beamer präsentieren» erscheint die Präsentation im Vollbild auf dem Beamer " +
         "und die Referentenansicht mit Notizen, nächster Folie und Uhr auf dem Laptop. Dafür den Bildschirm " +
-        "erweitern, nicht spiegeln.</p>" +
+        "erweitern, nicht spiegeln. " + ERWEITERN + "</p>" +
         "<p>Später jederzeit mit <kbd>M</kbd> (Beamer) oder <kbd>S</kbd> (nur Referentenansicht).</p>";
     var dialog = el(
       "div",

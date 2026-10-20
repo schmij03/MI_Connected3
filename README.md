@@ -143,9 +143,12 @@ Der Button «Referentenansicht» auf der Startseite öffnet die Präsentation mi
 
 - **Auf Beamer präsentieren** (wie in PowerPoint): Die Präsentation erscheint im Vollbild auf dem Beamer, die
   Referentenansicht füllt den Laptop. Voraussetzungen: Chrome oder Edge, und der Bildschirm ist *erweitert*, nicht
-  gespiegelt (Windows: Windows-Taste + P, «Erweitern»; Mac: Systemeinstellungen > Displays). Beim ersten Mal fragt
+  gespiegelt (Windows: Windows-Taste + P, «Erweitern»; Mac: Cmd + F1 oder Kontrollzentrum > Bildschirm). Beim ersten Mal fragt
   der Browser, ob die Seite Fenster auf allen Bildschirmen verwalten darf; nach dem Erlauben nochmals klicken.
   Bedient wird danach im Fenster auf dem Laptop, mit den Pfeiltasten oder einem Presenter.
+  Am Mac: Chrome oder Edge verwenden (Safari kann es nicht). Dauerhaft erweitern unter Systemeinstellungen > Displays >
+  Beamer > «Verwenden als: Erweiterter Bildschirm». «Monitore verwenden verschiedene Spaces» (Schreibtisch & Dock)
+  muss eingeschaltet sein, sonst wird der Laptop schwarz, sobald der Beamer ins Vollbild geht.
 - **Nur Referentenansicht**: öffnet das Notizenfenster; das Präsentationsfenster selbst auf den Beamer ziehen und
   dort F drücken. Das geht in jedem Browser.
 
