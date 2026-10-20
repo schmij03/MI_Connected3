@@ -381,6 +381,14 @@
   border-radius: 4px;
 }
 
+.reveal .slides section.frage blockquote p {
+  color: var(--petrol);
+}
+.reveal .slides section.frage ol > li::marker {
+  color: #dcebf3;
+  font-weight: 700;
+}
+
 /* ---------- Layout: merke ---------- */
 .reveal .slides section.merke {
   display: flex !important;
@@ -459,6 +467,7 @@
   gap: 24px;
   align-items: stretch;
   margin-top: 30px;
+  margin-bottom: 22px;
   counter-reset: karte;
 }
 .reveal .karte {
@@ -516,6 +525,48 @@
 .reveal .karten-reihe[style*="--anzahl: 4"] .karte h3 {
   font-size: 26px;
 }
+/* Noch offene Station: gestrichelt */
+.reveal .karte.offen {
+  background: transparent;
+  border: 2px dashed #b8c4cf;
+}
+/* Kompakt: viele kleine Kaesten */
+.reveal .kompakt .karten-reihe {
+  gap: 14px;
+  margin-top: 18px;
+}
+.reveal .kompakt .karte {
+  min-height: 0;
+  padding: 16px 20px;
+}
+.reveal .kompakt .karte h3 {
+  margin-bottom: 6px;
+  font-size: 25px;
+}
+.reveal .kompakt .karte p {
+  margin: 0;
+  font-size: 22px;
+  color: var(--text-leise);
+}
+.reveal .kompakt .karte.hervor p {
+  color: #dcebf3;
+}
+.reveal .slides section.ziele.kompakt ol {
+  margin-top: 14px;
+}
+.reveal .slides section.ziele.kompakt ol > li {
+  min-height: 0;
+  margin-bottom: 12px;
+  padding: 10px 24px;
+  gap: 20px;
+  font-size: 24px;
+}
+.reveal .slides section.ziele.kompakt ol > li > .ziel-nummer {
+  width: 46px;
+  height: 46px;
+  font-size: 22px;
+}
+
 /* Kaesten untereinander (z. B. "Zum Schluss") */
 .reveal .untereinander .karten-reihe {
   grid-template-columns: 1fr !important;

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 460" width="640" height="460" font-family="Carlito, Calibri, Arial, sans-serif">
+<rect width="640" height="460" fill="#ffffff"/>
+<line x1="90" y1="250" x2="270" y2="80" stroke="#e4572e" stroke-width="6" stroke-linecap="round"/>
+<rect x="163.0" y="148.0" width="34" height="34" rx="6" fill="#ffffff" stroke="#e4572e" stroke-width="2"/>
+<text x="180.0" y="174.0" font-size="26" font-weight="700" text-anchor="middle" fill="#21295c">4</text>
+<line x1="270" y1="80" x2="520" y2="150" stroke="#9aa5b1" stroke-width="4" stroke-linecap="round"/>
+<rect x="378.0" y="98.0" width="34" height="34" rx="6" fill="#ffffff" stroke="#9aa5b1" stroke-width="2"/>
+<text x="395.0" y="124.0" font-size="26" font-weight="700" text-anchor="middle" fill="#21295c">3</text>
+<line x1="270" y1="80" x2="290" y2="380" stroke="#e4572e" stroke-width="6" stroke-linecap="round"/>
+<rect x="263.0" y="213.0" width="34" height="34" rx="6" fill="#ffffff" stroke="#e4572e" stroke-width="2"/>
+<text x="280.0" y="239.0" font-size="26" font-weight="700" text-anchor="middle" fill="#21295c">5</text>
+<line x1="90" y1="250" x2="290" y2="380" stroke="#065a82" stroke-width="9" stroke-linecap="round"/>
+<rect x="173.0" y="298.0" width="34" height="34" rx="6" fill="#ffffff" stroke="#065a82" stroke-width="2"/>
+<text x="190.0" y="324.0" font-size="26" font-weight="700" text-anchor="middle" fill="#21295c">2</text>
+<line x1="290" y1="380" x2="520" y2="150" stroke="#e4572e" stroke-width="6" stroke-linecap="round"/>
+<rect x="388.0" y="248.0" width="34" height="34" rx="6" fill="#ffffff" stroke="#e4572e" stroke-width="2"/>
+<text x="405.0" y="274.0" font-size="26" font-weight="700" text-anchor="middle" fill="#21295c">6</text>
+<line x1="520" y1="150" x2="560" y2="390" stroke="#9aa5b1" stroke-width="4" stroke-linecap="round"/>
+<rect x="523.0" y="253.0" width="34" height="34" rx="6" fill="#ffffff" stroke="#9aa5b1" stroke-width="2"/>
+<text x="540.0" y="279.0" font-size="26" font-weight="700" text-anchor="middle" fill="#21295c">7</text>
+<line x1="290" y1="380" x2="560" y2="390" stroke="#e4572e" stroke-width="6" stroke-linecap="round"/>
+<rect x="408.0" y="368.0" width="34" height="34" rx="6" fill="#ffffff" stroke="#e4572e" stroke-width="2"/>
+<text x="425.0" y="394.0" font-size="26" font-weight="700" text-anchor="middle" fill="#21295c">4</text>
+<circle cx="90" cy="250" r="30" fill="#065a82" stroke="#065a82" stroke-width="4"/>
+<text x="90" y="261" font-size="32" font-weight="700" text-anchor="middle" fill="#ffffff">M</text>
+<circle cx="270" cy="80" r="30" fill="#ffffff" stroke="#21295c" stroke-width="4"/>
+<text x="270" y="91" font-size="32" font-weight="700" text-anchor="middle" fill="#21295c">N</text>
+<circle cx="520" cy="150" r="30" fill="#ffffff" stroke="#21295c" stroke-width="4"/>
+<text x="520" y="161" font-size="32" font-weight="700" text-anchor="middle" fill="#21295c">P</text>
+<circle cx="290" cy="380" r="30" fill="#065a82" stroke="#065a82" stroke-width="4"/>
+<text x="290" y="391" font-size="32" font-weight="700" text-anchor="middle" fill="#ffffff">O</text>
+<circle cx="560" cy="390" r="30" fill="#ffffff" stroke="#21295c" stroke-width="4"/>
+<text x="560" y="401" font-size="32" font-weight="700" text-anchor="middle" fill="#21295c">Q</text>
+</svg>
