@@ -1,6 +1,6 @@
 <!-- Erzeugt aus 02_MI_Praesentation_Kapitel1_Lektion2_IP-Adresse_und_Standort.pptx mit tools/pptx_zu_md.py. Anleitung zum Bearbeiten: README.md -->
 
-<!-- .slide: class="titel" data-nummer="1" -->
+<!-- .slide: class="titel" data-nummer="2" -->
 
 # Wo gibt es die beste Glace?
 
@@ -43,7 +43,7 @@ Alle suchen gleichzeitig. Danach vergleichen: Alle sehen Läden aus der Umgebung
 
 ## Sucht jetzt nach: Glace
 
-![](bilder/l1-ip-adresse-standort-f04-1.png)
+![](bilder/l2-ip-adresse-standort-f04-1.png)
 
 Note:
 Alle suchen gleichzeitig. Danach vergleichen: Alle sehen Läden aus der Umgebung.

@@ -12,70 +12,70 @@
       "titel": "Kapitel 1: Eine Entdeckungsreise durch das Internet",
       "lektionen": [
         {
-          "id": "l2-ferien-ohne-internet",
+          "id": "l1-ferien-ohne-internet",
           "titel": "Ferien ohne Internet?",
           "untertitel": "Router, Provider und Server",
           "kurztitel": "Ferien_ohne_Internet",
           "datum": "2026-08-25",
-          "datei": "k1/l2-ferien-ohne-internet.md",
+          "datei": "k1/l1-ferien-ohne-internet.md",
           "original": "02_MI_Praesentation_Kapitel1_Lektion1.pptx"
         },
         {
-          "id": "l1-ip-adresse-standort",
+          "id": "l2-ip-adresse-standort",
           "titel": "Wo gibt es die beste Glace?",
           "untertitel": "Wie Webseiten wissen, wo du gerade bist",
           "kurztitel": "IP_Adresse_Standort",
           "datum": "2026-09-15",
-          "datei": "k1/l1-ip-adresse-standort.md",
+          "datei": "k1/l2-ip-adresse-standort.md",
           "original": "02_MI_Praesentation_Kapitel1_Lektion2_IP-Adresse_und_Standort.pptx"
         },
         {
-          "id": "l2-bewertungen-datenstau",
+          "id": "l3-bewertungen-datenstau",
           "titel": "Kann man Bewertungen trauen?",
           "untertitel": "Und: Warum ruckelt das Video in den Ferien?",
           "kurztitel": "Bewertungen_Datenstau",
           "datum": "2026-09-22",
           "niveau": "B",
-          "datei": "k1/l2-bewertungen-datenstau.md",
+          "datei": "k1/l3-bewertungen-datenstau.md",
           "original": [
             "02_MI_Praesentation_K1_L3_Bewertungen_und_Datenstau.pptx",
             "02_MI_Praesentation_K1_L4_Datenstau.pptx"
           ]
         },
         {
-          "id": "l3-netzwerke-planen",
+          "id": "l4-netzwerke-planen",
           "titel": "Netzwerke planen",
           "untertitel": "Das Verfahren von Prim",
           "kurztitel": "Netzwerke_Prim",
           "niveau": "B",
-          "datei": "k1/l3-netzwerke-planen.md",
+          "datei": "k1/l4-netzwerke-planen.md",
           "original": "MI_K1_L5_NiveauB_Netzwerke_planen_Prim.pptx"
         },
         {
-          "id": "l4-rueckblick-prim",
+          "id": "l5-rueckblick-prim",
           "titel": "Eine Entdeckungsreise durch das Internet",
           "untertitel": "Zwischenrückblick und Algorithmus von Prim",
           "kurztitel": "Rueckblick_Prim",
           "datum": "2026-10-20",
-          "datei": "k1/l4-rueckblick-prim.md",
+          "datei": "k1/l5-rueckblick-prim.md",
           "original": "MI_Kapitel_1_Ru_ckblick_und_Prim_20.10.2026.pptx"
         },
         {
-          "id": "l5-dienste-und-fotos",
+          "id": "l6-dienste-und-fotos",
           "titel": "Der Post ist da",
           "untertitel": "Internetdienste und Ferienfotos: 1F und 1G",
           "kurztitel": "Dienste_und_Fotos",
           "datum": "2026-10-27",
-          "datei": "k1/l5-dienste-und-fotos.md",
+          "datei": "k1/l6-dienste-und-fotos.md",
           "original": "MI_Kapitel_1_Dienste_und_Fotos_27.10.2026.pptx"
         },
         {
-          "id": "l6-wirkung-von-fotos",
+          "id": "l7-wirkung-von-fotos",
           "titel": "Aufmerksamkeit um jeden Preis?",
           "untertitel": "Wirkung von Fotos, Repetition und Prüfungsinfos: 1H und 1I",
           "kurztitel": "Wirkung_von_Fotos_Repetition",
           "datum": "2026-11-03",
-          "datei": "k1/l6-wirkung-von-fotos.md",
+          "datei": "k1/l7-wirkung-von-fotos.md",
           "original": "MI_Kapitel_1_Wirkung_von_Fotos_und_Repetition_03.11.2026.pptx"
         }
       ]

@@ -149,7 +149,7 @@ Die vier Schritte sind hier in eigenen Worten formuliert. Vergleiche sie kurz mi
 
 ## Ein Netz mit fünf Dörfern
 
-![Netz mit den Dörfern M, N, O, P und Q und den Kosten der Verbindungen, Start bei M](bilder/l4-prim-1-ausgangslage.svg)
+![Netz mit den Dörfern M, N, O, P und Q und den Kosten der Verbindungen, Start bei M](bilder/l5-prim-1-ausgangslage.svg)
 
 ***
 
@@ -170,7 +170,7 @@ Eigenes Beispielnetz, damit es nicht mit den Netzen im Arbeitsbuch übereinstimm
 
 ## Das Netz wächst
 
-![Netz nach Schritt 1: M-O ist gewählt, die möglichen Verbindungen nach aussen sind orange](bilder/l4-prim-2-schritt2.svg)
+![Netz nach Schritt 1: M-O ist gewählt, die möglichen Verbindungen nach aussen sind orange](bilder/l5-prim-2-schritt2.svg)
 
 ***
 
@@ -193,7 +193,7 @@ Zustand nach Schritt 1: Von M aus ist M-O (2) die günstigste Verbindung und wur
 
 ## Weiter, bis alle verbunden sind
 
-![Netz mit M, N und O: N-P, O-P und O-Q sind orange, N-O ist gestrichelt](bilder/l4-prim-3-schritt3.svg)
+![Netz mit M, N und O: N-P, O-P und O-Q sind orange, N-O ist gestrichelt](bilder/l5-prim-3-schritt3.svg)
 
 ***
 
@@ -214,7 +214,7 @@ Zustand nach M-N: Das Netz umfasst M, N und O. Die Klasse wählt selbst den näc
 
 ## Das günstigste Netz
 
-![Das günstigste Netz mit den Verbindungen M-O, M-N, N-P und O-Q](bilder/l4-prim-4-ergebnis.svg)
+![Das günstigste Netz mit den Verbindungen M-O, M-N, N-P und O-Q](bilder/l5-prim-4-ergebnis.svg)
 
 ***
 

@@ -72,7 +72,7 @@ des Laufs unter *Actions*. Bestehende Markdown-Dateien werden nie automatisch ü
 
 ```
 pip install -r requirements.txt
-python tools/pptx_zu_md.py quellen/datei.pptx --kapitel k1 --id l2-bewertungen-datenstau --datum 2026-09-22
+python tools/pptx_zu_md.py quellen/datei.pptx --kapitel k1 --id l3-bewertungen-datenstau --datum 2026-09-22
 ```
 Besteht eine Lektion aus mehreren PowerPoint-Dateien, kann `"original"` in `kapitel.json` auch eine Liste sein;
 dann gibt es mehrere Buttons «Original Teil 1/2».
@@ -148,7 +148,7 @@ auch die Referentenansicht. «Kapitel offline (ZIP)» enthält alle HTML-Dateien
 
 `MI_<Kapitel>_<Lektion>_<Kurztitel>`, ohne Umlaute, Leer- und Sonderzeichen, zum Beispiel
 `MI_K1_L2_Bewertungen_Datenstau.pdf`, `..._mit_Notizen.pdf`, `.pptx`, `.html`, `..._Original.pptx`,
-`MI_K1_offline.zip`. Der Kurztitel kommt aus der ID (`l2-bewertungen-datenstau`) oder aus dem Feld `kurztitel`.
+`MI_K1_offline.zip`. Der Kurztitel kommt aus der ID (`l3-bewertungen-datenstau`) oder aus dem Feld `kurztitel`.
 
 ## Farben
 

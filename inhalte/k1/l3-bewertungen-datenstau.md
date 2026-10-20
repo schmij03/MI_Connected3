@@ -1,6 +1,6 @@
 <!-- Erzeugt aus 02_MI_Praesentation_K1_L3_Bewertungen_und_Datenstau.pptx und 02_MI_Praesentation_K1_L4_Datenstau.pptx mit tools/pptx_zu_md.py, von Hand zusammengefuehrt und korrigiert. Anleitung zum Bearbeiten: README.md -->
 
-<!-- .slide: class="titel" data-nummer="2" -->
+<!-- .slide: class="titel" data-nummer="3" -->
 
 # Kann man Bewertungen trauen?
 

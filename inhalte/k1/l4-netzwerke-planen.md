@@ -1,6 +1,6 @@
 <!-- Erzeugt aus MI_K1_L5_NiveauB_Netzwerke_planen_Prim.pptx mit tools/pptx_zu_md.py. Anleitung zum Bearbeiten: README.md -->
 
-<!-- .slide: class="titel" data-nummer="3" -->
+<!-- .slide: class="titel" data-nummer="4" -->
 
 # Netzwerke planen
 
@@ -29,7 +29,7 @@ Heute wird viel gezeichnet. Merkkarten und Farbstifte bereitlegen.
 
 ## Fünf Häuser sollen Internet bekommen
 
-![](bilder/l3-netzwerke-planen-f03-1.png)
+![](bilder/l4-netzwerke-planen-f03-1.png)
 
 Zähl die Kosten zusammen. Wie teuer ist dieses Netz?
 
@@ -65,7 +65,7 @@ Die Merkkarte mit denselben vier Schritten liegt auf jedem Tisch.
 
 ## Wir machen es zusammen, Start bei A
 
-![](bilder/l3-netzwerke-planen-f06-1.png)
+![](bilder/l4-netzwerke-planen-f06-1.png)
 
 Note:
 Zuerst fragen: Welche Verbindung ist jetzt die günstigste? Erst dann einblenden.
@@ -74,7 +74,7 @@ Zuerst fragen: Welche Verbindung ist jetzt die günstigste? Erst dann einblenden
 
 ## Wir machen es zusammen, Start bei A
 
-![](bilder/l3-netzwerke-planen-f07-1.png)
+![](bilder/l4-netzwerke-planen-f07-1.png)
 
 Note:
 Zuerst fragen: Welche Verbindung ist jetzt die günstigste? Erst dann einblenden.
@@ -83,7 +83,7 @@ Zuerst fragen: Welche Verbindung ist jetzt die günstigste? Erst dann einblenden
 
 ## Wir machen es zusammen, Start bei A
 
-![](bilder/l3-netzwerke-planen-f08-1.png)
+![](bilder/l4-netzwerke-planen-f08-1.png)
 
 Note:
 Zuerst fragen: Welche Verbindung ist jetzt die günstigste? Erst dann einblenden.
@@ -92,7 +92,7 @@ Zuerst fragen: Welche Verbindung ist jetzt die günstigste? Erst dann einblenden
 
 ## Wir machen es zusammen, Start bei A
 
-![](bilder/l3-netzwerke-planen-f09-1.png)
+![](bilder/l4-netzwerke-planen-f09-1.png)
 
 Note:
 Fertig: vier Verbindungen, Kosten 10. Kontrollregel anwenden lassen.

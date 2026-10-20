@@ -171,16 +171,27 @@ export function inhalteLaden() {
     });
 
     const gefiltert = lektionen.filter(Boolean);
-    // Innerhalb des Kapitels nach Datum sortieren, Lektionen ohne Datum am Schluss
-    gefiltert.sort((a, b) => {
-      if (a.datum && b.datum && a.datum !== b.datum) return a.datum < b.datum ? -1 : 1;
-      if (a.datum && !b.datum) return -1;
-      if (!a.datum && b.datum) return 1;
-      const na = parseInt(a.nummer, 10);
-      const nb = parseInt(b.nummer, 10);
-      if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
-      return a.position - b.position;
-    });
+    // Innerhalb des Kapitels nach Datum sortieren. Lektionen ohne Datum stehen nach der
+    // Lektion mit der naechstkleineren Nummer, ohne Nummer am Schluss.
+    const nummerVon = (l) => parseInt(l.nummer, 10);
+    const sortiert = gefiltert
+      .filter((l) => l.datum)
+      .sort((a, b) => (a.datum !== b.datum ? (a.datum < b.datum ? -1 : 1) : nummerVon(a) - nummerVon(b) || a.position - b.position));
+    gefiltert
+      .filter((l) => !l.datum)
+      .sort((a, b) => nummerVon(a) - nummerVon(b) || a.position - b.position)
+      .forEach((l) => {
+        const n = nummerVon(l);
+        let stelle = sortiert.length;
+        if (!isNaN(n)) {
+          stelle = 0;
+          sortiert.forEach((andere, i) => {
+            if (nummerVon(andere) < n) stelle = i + 1;
+          });
+        }
+        sortiert.splice(stelle, 0, l);
+      });
+    gefiltert.splice(0, gefiltert.length, ...sortiert);
     return { id: k.id, titel: k.titel, kuerzel, lektionen: gefiltert };
   });
 
