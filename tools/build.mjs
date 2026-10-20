@@ -7,7 +7,7 @@
  *   4. schreibt die oeffentliche Seite mit allen Inhalten und Downloads nach build/site
  *
  * Aufruf:
- *   node tools/build.mjs [--schnell] [--nur k1/l2-bewertungen-datenstau]
+ *   node tools/build.mjs [--schnell] [--nur k1/l3-bewertungen-datenstau]
  *
  *   --schnell  ohne PDF und PPTX (fuer eine rasche Vorschau)
  *   --nur      nur diese Praesentation(en) exportieren (Pfad wie im Viewer, mehrfach moeglich)

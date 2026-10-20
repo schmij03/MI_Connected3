@@ -3,7 +3,7 @@
 Wandelt eine PowerPoint-Datei in eine Markdown-Praesentation fuer reveal.js um.
 
 Aufruf:
-  python tools/pptx_zu_md.py quellen/datei.pptx --kapitel k1 --id l2-bewertungen-datenstau
+  python tools/pptx_zu_md.py quellen/datei.pptx --kapitel k1 --id l3-bewertungen-datenstau
 
 Weitere Angaben (alle freiwillig):
   --titel "..."        Titel auf der Startseite (sonst: Titel der ersten Folie)
@@ -1286,7 +1286,7 @@ def main(argumente: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="PowerPoint in Markdown fuer reveal.js umwandeln")
     parser.add_argument("datei", type=Path, help="PowerPoint-Datei, z. B. quellen/lektion.pptx")
     parser.add_argument("--kapitel", help="Kapitel-ID aus inhalte/kapitel.json, z. B. k1")
-    parser.add_argument("--id", help="ID der Lektion, z. B. l2-bewertungen-datenstau")
+    parser.add_argument("--id", help="ID der Lektion, z. B. l3-bewertungen-datenstau")
     parser.add_argument("--titel")
     parser.add_argument("--untertitel")
     parser.add_argument("--datum")
@@ -1309,7 +1309,7 @@ def main(argumente: list[str] | None = None) -> int:
     if not a.kapitel or not a.id:
         parser.error("--kapitel und --id sind noetig")
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", a.id):
-        parser.error("--id darf nur Kleinbuchstaben, Ziffern und Bindestriche enthalten (z. B. l2-bewertungen-datenstau)")
+        parser.error("--id darf nur Kleinbuchstaben, Ziffern und Bindestriche enthalten (z. B. l3-bewertungen-datenstau)")
     if a.datum and not re.fullmatch(r"\d{4}-\d{2}-\d{2}", a.datum):
         parser.error("--datum bitte im Format JJJJ-MM-TT, z. B. 2026-09-22")
 

@@ -131,7 +131,7 @@ Ca. 6 Min. Erklärvideo zum Aufbau des Internets über Beamer zeigen (Erklärvid
 
 ## Wie funktioniert das Internet?
 
-[![Frag Fred: Wie funktioniert das Internet? | Kindervideos | SRF Kids](bilder/l2-ferien-ohne-internet-f08-1.jpg)](https://www.youtube.com/watch?v=e9FJPnFQWi8)
+[![Frag Fred: Wie funktioniert das Internet? | Kindervideos | SRF Kids](bilder/l1-ferien-ohne-internet-f08-1.jpg)](https://www.youtube.com/watch?v=e9FJPnFQWi8)
 
 ***
 
@@ -253,7 +253,7 @@ Bricht dann das ganze Internet zusammen? Schreibe deine Vermutung auf und begrü
 - Sozialform: Partnerarbeit
 - Arbeitsbuch: Aufgabe 104
 
-![Weltkarte mit dem Weg der Nachricht von Lisa zu Aylin über Router und Server](bilder/l2-ferien-ohne-internet-f14-1.png)
+![Weltkarte mit dem Weg der Nachricht von Lisa zu Aylin über Router und Server](bilder/l1-ferien-ohne-internet-f14-1.png)
 
 Note:
 Kernaufgabe der Lektion (Handbuch, Aufgabe 104). Beobachtungsbogen nutzen: Wer verwendet alle drei Begriffe korrekt?
