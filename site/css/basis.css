@@ -342,6 +342,16 @@ main.inhalt {
 .aktionen-zeile .knopf-referent {
   flex: 1 1 140px;
 }
+.aktionen-zeile .knopf-tafel {
+  flex: 1 1 100%;
+  border-color: var(--orange);
+  color: var(--orange-dunkel);
+  font-weight: 700;
+}
+.aktionen-zeile .knopf-tafel:hover {
+  background: #fdf0eb;
+  border-color: var(--orange-dunkel);
+}
 .leer-treffer {
   padding: 28px;
   text-align: center;

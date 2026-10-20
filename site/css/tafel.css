@@ -1,0 +1,675 @@
+/*
+ * Interaktive Tafel (tafel.html). Farben und Schrift aus basis.css.
+ */
+
+body.tafel-seite {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #dfe5ea;
+}
+
+/* Werkzeugleiste */
+.tafel-leiste {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  padding: 6px 10px;
+  background: var(--dunkelblau);
+  color: var(--weiss);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  position: relative;
+  z-index: 20;
+}
+.leiste-gruppe {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.leiste-rechts {
+  margin-left: auto;
+}
+.tafel-leiste .marke-punkt {
+  text-decoration: none;
+}
+.tafel-titel {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  margin: 0 6px 0 4px;
+  max-width: 280px;
+}
+.tafel-titel strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.oberflaeche .tafel-titel a {
+  color: #cfe0ec;
+  font-size: 14px;
+}
+.t-knopf {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 38px;
+  padding: 5px 9px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--weiss);
+  font-size: 15px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.t-knopf svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+.t-knopf:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+.t-knopf.aktiv {
+  background: var(--orange);
+  border-color: var(--orange);
+}
+.t-knopf[disabled] {
+  opacity: 0.4;
+  cursor: default;
+  background: transparent;
+}
+.t-knopf:focus-visible,
+.tafel-leiste select:focus-visible {
+  outline: 3px solid rgba(237, 125, 49, 0.7);
+  outline-offset: 1px;
+}
+.tafel-leiste select {
+  min-height: 38px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: var(--dunkelblau);
+  color: var(--weiss);
+}
+body[data-modus="zeichnen"] .nur-bearbeiten,
+body[data-modus="bearbeiten"] .nur-zeichnen {
+  display: none;
+}
+.farben,
+.dicken {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 4px;
+}
+.farbknopf,
+.dickknopf {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  padding: 0;
+  display: grid;
+  place-items: center;
+}
+.farbknopf {
+  background: var(--farbe);
+}
+.dickknopf {
+  background: transparent;
+}
+.dickknopf::after {
+  content: "";
+  width: var(--dicke);
+  height: var(--dicke);
+  border-radius: 50%;
+  background: var(--weiss);
+}
+.farbknopf.aktiv,
+.dickknopf.aktiv {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 2px var(--orange);
+}
+
+/* Menue Datei */
+.menue {
+  position: relative;
+}
+.menue-liste {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 240px;
+  background: var(--weiss);
+  border-radius: var(--radius);
+  box-shadow: var(--schatten);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+}
+.menue-liste[hidden] {
+  display: none;
+}
+.menue-liste button {
+  text-align: left;
+  padding: 9px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+}
+.menue-liste button:hover {
+  background: var(--hellgrau);
+}
+
+/* Hauptbereich */
+.tafel-haupt {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+.folienliste {
+  width: 250px;
+  flex: none;
+  overflow-y: auto;
+  background: var(--weiss);
+  border-right: 1px solid var(--grau);
+  padding: 12px 10px;
+}
+.folienliste[hidden] {
+  display: none;
+}
+.folienliste h2 {
+  margin: 0;
+  font-size: 18px;
+  color: var(--dunkelblau);
+}
+.folien-hinweis {
+  margin: 2px 0 10px;
+  font-size: 14px;
+  color: var(--text-leise);
+}
+.folienliste ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.folie-eintrag {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 7px 8px;
+  margin-bottom: 4px;
+  border: 1px solid var(--grau);
+  border-radius: 8px;
+  background: var(--hellblau);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.25;
+  cursor: pointer;
+}
+.folie-eintrag:hover {
+  border-color: var(--petrol);
+  background: var(--petrol-hell);
+}
+.folie-nr {
+  flex: none;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--petrol);
+  color: var(--weiss);
+  font-size: 13px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+.tafel-rahmen {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Die Tafel: feste Flaeche 1600 x 900, per transform skaliert */
+.tafel {
+  position: absolute;
+  transform-origin: 0 0;
+  border-radius: 6px;
+  box-shadow: 0 2px 16px rgba(23, 42, 75, 0.25);
+  overflow: hidden;
+  touch-action: none;
+}
+.hg-weiss {
+  background: #ffffff;
+}
+.hg-kariert {
+  background-color: #ffffff;
+  background-image: linear-gradient(#cfdde6 1px, transparent 1px), linear-gradient(90deg, #cfdde6 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.hg-liniert {
+  background-color: #ffffff;
+  background-image: linear-gradient(transparent 59px, #cfdde6 59px, #cfdde6 60px);
+  background-size: 100% 60px;
+}
+.hg-punkte {
+  background-color: #ffffff;
+  background-image: radial-gradient(#9fb4c2 1.6px, transparent 1.8px);
+  background-size: 40px 40px;
+}
+.hg-gruen {
+  background: radial-gradient(ellipse at 50% 40%, #3f6b52, #2c4f3c);
+}
+.hg-dunkel {
+  background: var(--dunkelblau);
+}
+.ebene-elemente {
+  position: absolute;
+  inset: 0;
+}
+.ebene-zeichnung {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100000;
+}
+.tafel.zeichnen .ebene-zeichnung {
+  pointer-events: auto;
+  cursor: crosshair;
+}
+
+/* Elemente */
+.element {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background: var(--weiss);
+  border: 1px solid #c9d3da;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(23, 42, 75, 0.14);
+  font-family: var(--schrift);
+  color: var(--text);
+}
+.element.gewaehlt {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 2px var(--orange), 0 6px 20px rgba(23, 42, 75, 0.2);
+}
+.element.zieht {
+  opacity: 0.92;
+}
+.griff {
+  height: 44px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 0 4px 0 12px;
+  border-bottom: 1px solid #e3e9ee;
+  border-radius: 10px 10px 0 0;
+  background: var(--hellblau);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+.zieht .griff {
+  cursor: grabbing;
+}
+.griff-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--petrol);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.griff-werkzeuge {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.element:hover .griff-werkzeuge,
+.element.gewaehlt .griff-werkzeuge {
+  opacity: 1;
+}
+.g-knopf {
+  width: 36px;
+  height: 36px;
+  padding: 5px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-leise);
+  cursor: pointer;
+}
+.g-knopf:hover {
+  background: var(--petrol-hell);
+  color: var(--dunkelblau);
+}
+.g-knopf svg {
+  width: 100%;
+  height: 100%;
+}
+.koerper {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 0 10px 10px;
+}
+.ziehpunkt {
+  position: absolute;
+  right: -10px;
+  bottom: -10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--orange);
+  border: 2px solid var(--weiss);
+  cursor: nwse-resize;
+  opacity: 0;
+  touch-action: none;
+}
+.element:hover .ziehpunkt,
+.element.gewaehlt .ziehpunkt {
+  opacity: 1;
+}
+/* Im Zeichenmodus nur ansehen */
+.tafel.zeichnen .griff-werkzeuge,
+.tafel.zeichnen .ziehpunkt {
+  display: none;
+}
+.tafel.zeichnen .element.gewaehlt {
+  border-color: #c9d3da;
+  box-shadow: 0 2px 10px rgba(23, 42, 75, 0.14);
+}
+
+/* Text und Notiz */
+.textfeld {
+  height: 100%;
+  padding: 10px 14px;
+  overflow: auto;
+  outline: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+  cursor: text;
+}
+.textfeld:empty::before {
+  content: attr(data-platzhalter);
+  color: #9aa5ae;
+}
+.element-text {
+  background: rgba(255, 255, 255, 0.92);
+}
+.element-notiz {
+  background: var(--notiz, #fff3a8);
+  border-color: rgba(0, 0, 0, 0.12);
+}
+.element-notiz .griff {
+  background: rgba(0, 0, 0, 0.05);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Bild, Link, Folie */
+.element-bild img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+}
+.element-bild .koerper,
+.element-folie .koerper {
+  cursor: grab;
+}
+.koerper iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+.element-folie iframe {
+  pointer-events: none;
+  background: var(--weiss);
+}
+.folie-deckel {
+  position: absolute;
+  inset: 0;
+}
+.link-karte {
+  height: 100%;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  font-size: 30px;
+  overflow-wrap: anywhere;
+}
+.link-karte small {
+  font-size: 20px;
+  color: var(--text-leise);
+}
+
+/* Widgets */
+.element-timer .koerper,
+.element-stoppuhr .koerper,
+.element-zufall .koerper,
+.element-gruppen .koerper,
+.element-wuerfel .koerper {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 14px 14px;
+  container-type: size;
+}
+.gross-zahl {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  font-size: min(48cqh, 26cqw);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--dunkelblau);
+  line-height: 1;
+}
+.abgelaufen .gross-zahl {
+  color: var(--orange);
+  animation: blinken 0.8s steps(2) 4;
+}
+@keyframes blinken {
+  50% {
+    opacity: 0.2;
+  }
+}
+.zeit-balken {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--hellgrau);
+  overflow: hidden;
+}
+.zeit-balken span {
+  display: block;
+  height: 100%;
+  background: var(--petrol);
+  transition: width 0.2s linear;
+}
+.widget-knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+.tafel .w-knopf,
+.tafel .w-wahl {
+  min-height: 48px;
+  padding: 6px 16px;
+  border: 1px solid var(--grau);
+  border-radius: 8px;
+  background: var(--weiss);
+  color: var(--text);
+  font: inherit;
+  font-size: 22px;
+  cursor: pointer;
+}
+.tafel .w-knopf:hover {
+  background: var(--hellgrau);
+}
+.tafel .w-haupt {
+  background: var(--petrol);
+  border-color: var(--petrol);
+  color: var(--weiss);
+  font-weight: 700;
+}
+.tafel .w-haupt:hover {
+  background: #155960;
+}
+.w-knopf[disabled] {
+  opacity: 0.6;
+}
+.widget-info {
+  text-align: center;
+  font-size: 22px;
+  color: var(--text-leise);
+  min-height: 1.2em;
+}
+.widget-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 22px;
+}
+.widget-option input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+}
+.widget-option input[type="number"] {
+  width: 90px;
+  min-height: 44px;
+  padding: 2px 6px;
+  font: inherit;
+}
+.namen-feld {
+  flex: 1;
+  min-height: 60px;
+  resize: none;
+  padding: 8px 10px;
+  border: 1px solid var(--grau);
+  border-radius: 8px;
+  font: inherit;
+  font-size: 24px;
+}
+.zufall-name {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  font-size: min(26cqh, 14cqw);
+  font-weight: 700;
+  color: var(--orange);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+.gruppen-raster {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+  align-content: start;
+}
+.gruppe {
+  border: 1px solid var(--grau);
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: var(--hellblau);
+}
+.gruppe strong {
+  color: var(--petrol);
+}
+.gruppe strong {
+  font-size: 22px;
+}
+.gruppe ul {
+  margin: 4px 0 0;
+  padding-left: 22px;
+  font-size: 24px;
+}
+.wuerfel-flaeche {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6%;
+  min-height: 0;
+}
+.wuerfel {
+  width: min(50cqh, 26cqw, 180px);
+  height: min(50cqh, 26cqw, 180px);
+  display: grid;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  padding: 12px;
+  border-radius: 18%;
+  background: var(--weiss);
+  border: 2px solid var(--dunkelblau);
+  box-shadow: inset 0 -4px 0 rgba(33, 41, 92, 0.15);
+}
+.wuerfel .auge {
+  width: 70%;
+  height: 70%;
+  margin: auto;
+  border-radius: 50%;
+  background: var(--dunkelblau);
+}
+.rollt .wuerfel {
+  transform: rotate(-8deg);
+}
+
+/* Hinweis unten */
+.tafel-meldung {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  max-width: min(640px, calc(100vw - 32px));
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  background: var(--dunkelblau);
+  color: var(--weiss);
+  box-shadow: var(--schatten);
+  z-index: 30;
+}
+
+@media (max-width: 900px) {
+  .tafel-leiste .t-knopf {
+    font-size: 0;
+    gap: 0;
+  }
+  .t-knopf svg {
+    width: 22px;
+    height: 22px;
+  }
+  .tafel-titel {
+    display: none;
+  }
+  .folienliste {
+    width: 190px;
+  }
+}

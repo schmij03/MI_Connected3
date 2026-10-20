@@ -590,7 +590,7 @@
             aufbereiten(folie, optionen);
           });
 
-        if (empfaenger || /print-pdf/i.test(window.location.search)) return;
+        if (empfaenger || optionen.eingebettet || /print-pdf/i.test(window.location.search)) return;
 
         var countdown = new Countdown(deck);
         deck.addKeyBinding({ keyCode: 84, key: "T", description: "Countdown starten / anhalten (Shift+T schliesst)" }, function (e) {
@@ -603,6 +603,12 @@
             countdown.taste();
           }
         });
+
+        if (optionen.tafel) {
+          deck.addKeyBinding({ keyCode: 87, key: "W", description: "Aktuelle Folie auf der interaktiven Tafel öffnen" }, function () {
+            window.open(optionen.tafel + "&folie=" + (deck.getIndices().h + 1), "_blank");
+          });
+        }
 
         var leiste = downloadLeiste(deck, optionen);
         if (leiste) {
@@ -629,6 +635,9 @@
   window.MiFolien.starten = function (optionen) {
     var suche = window.location.search;
     var druck = /print-pdf/i.test(suche);
+    // Auf der interaktiven Tafel: nur die Folie, ohne Bedienelemente und Tastatur
+    var eingebettet = !!optionen.eingebettet;
+    if (eingebettet) document.documentElement.classList.add("mi-eingebettet");
     var notizenDrucken = /notizen/i.test(suche);
     if (optionen.titel) document.title = optionen.titel;
 
@@ -648,14 +657,15 @@
       hash: true,
       width: 1280,
       height: 720,
-      margin: druck ? 0 : 0.03,
+      margin: druck || eingebettet ? 0 : 0.03,
       minScale: 0.2,
       maxScale: 2.5,
       center: false,
-      controls: true,
+      controls: !eingebettet,
+      progress: !eingebettet,
+      keyboard: !eingebettet,
       controlsTutorial: false,
-      progress: true,
-      slideNumber: "c/t",
+      slideNumber: eingebettet ? false : "c/t",
       showSlideNumber: "all",
       transition: "fade",
       transitionSpeed: "fast",

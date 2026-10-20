@@ -177,7 +177,7 @@ async function main() {
 
   // Oeffentliche Programmdateien
   const QUELLE = path.join(WURZEL, "site");
-  for (const datei of ["index.html", "praesentation.html"]) {
+  for (const datei of ["index.html", "praesentation.html", "tafel.html"]) {
     kopieren(path.join(QUELLE, datei), path.join(SITE, datei));
   }
   for (const ordner of ["css", "js", "fonts"]) kopieren(path.join(QUELLE, ordner), path.join(SITE, ordner));
