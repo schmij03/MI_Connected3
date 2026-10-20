@@ -220,11 +220,11 @@
       }
       if (k.tagName === "H3" && !nachher) {
         aktuell = el("div", "karte");
-        // <!-- .element: class="hervor" --> nach der Ueberschrift hebt die Karte hervor
-        if (k.classList.contains("hervor")) {
-          k.classList.remove("hervor");
-          aktuell.classList.add("hervor");
-        }
+        // <!-- .element: class="hervor" --> (oder "offen") an der Ueberschrift gilt fuer die ganze Karte
+        Array.prototype.slice.call(k.classList).forEach(function (klasse) {
+          k.classList.remove(klasse);
+          aktuell.classList.add(klasse);
+        });
         karten.push(aktuell);
         if (!ersteKarte) ersteKarte = k;
       }
