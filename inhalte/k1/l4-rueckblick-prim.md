@@ -20,7 +20,7 @@ Ankommen, ca. 2 Minuten. Begrüssen, kurz sagen, was heute läuft: ein Blick zur
 | Phase | Worum es geht | Zeit |
 |---|---|---|
 | **Rückblick** | Unsere Reise durch Kapitel 1 bis jetzt | 5 Min |
-| **Weisst du's noch?** | Fünf Fragen zu den Stationen 1A bis 1E | 8 Min |
+| **Gimkit** | Quiz zu den Stationen 1A bis 1E | 8 Min |
 | **Prim wiederholen** | Die vier Schritte an einem neuen Beispiel | 10 Min |
 | **Auftrag** | Arbeitsbuch Aufgaben 118 bis 120, zu zweit | 17 Min |
 | **Sicherung** | Was merken wir uns? Ausblick auf die Prüfung | 5 Min |
@@ -75,20 +75,31 @@ Note:
 
 ---
 
-<!-- .slide: class="ziele kompakt" data-zeit="8" -->
+<!-- .slide: class="auftrag" -->
 
-## Fünf Fragen zu 1A bis 1E
+## Gimkit: Weisst du's noch?
 
-1. Was macht ein Router?
-2. Was verrät deine IP-Adresse über dich?
-3. Nenne ein Kriterium für eine glaubwürdige Online-Bewertung.
-4. Nenne einen Grund für Datenstau im Netz.
-5. Was will der Algorithmus von Prim erreichen?
+- Zeit: 8 Minuten
+- Sozialform: allein
+- Material: iPad
 
-> Zu zweit besprechen (3 Min), danach melden wir uns im Plenum.
+1. Öffne **gimkit.com/join**.
+2. Gib den Spielcode ein, den ich euch zeige, und deinen Vornamen.
+3. Beantworte die Fragen zu den Stationen 1A bis 1E: Router, IP-Adresse, Bewertungen, Datenstau und Prim.
+
+> Danach schauen wir gemeinsam an, was gut sass und was nochmals wichtig ist.
 
 Note:
-Vorgehen: Fragen zeigen, 3 Minuten Partnergespräch, dann Plenum (ca. 4 Minuten). Ohne Hilfsmittel, damit sichtbar wird, was sitzt. Die Lösungen stehen auf der nächsten Folie. Die Fragen decken Prüfungsaufgabe 1 (Begriffe), 4 (Standort), 6 (Bewertungen) und 5 (Prim) ab.
+Gimkit statt der fünf Fragen im Partnergespräch. Vorgehen: Spiel auf gimkit.com starten (Live-Spiel, Modus zum Beispiel «Classic»), Spielcode am Beamer zeigen, ca. 6 Minuten spielen lassen, dann 2 Minuten Rückmeldung: Welche Fragen waren schwierig? Ohne Hilfsmittel, damit sichtbar wird, was sitzt. Die Zusammenfassung steht auf der nächsten Folie.
+
+Fragen für das Kit (aus der bisherigen Folie, mit Antworten):
+1. Was macht ein Router? Antwort: Er leitet Datenpakete von einem Netzwerk ins nächste weiter.
+2. Was verrät deine IP-Adresse über dich? Antwort: den ungefähren Standort des Geräts, nicht die genaue Adresse.
+3. Nenne ein Kriterium für eine glaubwürdige Online-Bewertung. Antwort: zum Beispiel mindestens 20 Bewertungen, Textkommentar, persönliche Erfahrung, über längere Zeit verteilt, aktuell.
+4. Nenne einen Grund für Datenstau im Netz. Antwort: zum Beispiel zu viele Personen im gleichen WLAN (letzte Meile), grosse Videodaten, viele Router auf dem Weg.
+5. Was will der Algorithmus von Prim erreichen? Antwort: alle Dörfer verbinden, und zwar mit möglichst geringen Gesamtkosten.
+
+Die Fragen decken Prüfungsaufgabe 1 (Begriffe), 4 (Standort), 6 (Bewertungen) und 5 (Prim) ab.
 
 ---
 
@@ -103,7 +114,7 @@ Vorgehen: Fragen zeigen, 3 Minuten Partnergespräch, dann Plenum (ca. 4 Minuten)
 5. **Prim:** alle Dörfer verbinden, und zwar mit möglichst geringen Gesamtkosten.
 
 Note:
-Mehrere Antworten sind möglich, jede sinnvolle Antwort gilt. Zu Frage 2: In der Prüfung (Aufgabe 4) sollen auch zwei weitere Ortungsarten genannt werden. Mögliche Ergänzung im Plenum: Satelliten (GPS), Mobilfunk, WLAN-Basisstationen. Zu Frage 4: Das Nadelöhr ist die letzte Meile (Router zu den Haushalten), nicht die Länge der Glasfaserkabel. Bei Unsicherheit die Frage kurz nochmals an der Karte (Folie «Unsere Reise») verorten.
+Zusammenfassung nach dem Gimkit. Mehrere Antworten sind möglich, jede sinnvolle Antwort gilt. Zur IP-Adresse: In der Prüfung (Aufgabe 4) sollen auch zwei weitere Ortungsarten genannt werden. Mögliche Ergänzung im Plenum: Satelliten (GPS), Mobilfunk, WLAN-Basisstationen. Zum Datenstau: Das Nadelöhr ist die letzte Meile (Router zu den Haushalten), nicht die Länge der Glasfaserkabel. Bei Unsicherheit das Thema kurz nochmals an der Karte (Folie «Unsere Reise») verorten.
 
 ---
 
