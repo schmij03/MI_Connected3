@@ -77,8 +77,12 @@
     praesentieren.href = "praesentation.html?p=" + encodeURIComponent(lektion.pfad).replace(/%2F/g, "/");
     var referent = el("a", "knopf knopf-referent", "Referentenansicht");
     referent.href = praesentieren.href + "&referent=1";
+    var tafel = el("a", "knopf knopf-tafel", "Interaktive Tafel");
+    tafel.href = "tafel.html?p=" + encodeURIComponent(lektion.pfad).replace(/%2F/g, "/");
+    tafel.title = "Interaktive Tafel mit den Folien dieser Präsentation";
     zeile1.appendChild(praesentieren);
     zeile1.appendChild(referent);
+    zeile1.appendChild(tafel);
     aktionen.appendChild(zeile1);
 
     var zeile2 = el("div", "aktionen-zeile");

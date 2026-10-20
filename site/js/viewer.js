@@ -84,6 +84,8 @@
       nummer: lektion.nummer,
       downloads: downloads,
       startseite: "index.html",
+      tafel: "tafel.html?p=" + encodeURIComponent(pfad).replace(/%2F/g, "/"),
+      eingebettet: parameter.get("tafel") === "1",
       referent: parameter.get("referent") === "1" && !/receiver/i.test(location.search)
     });
   }

@@ -137,6 +137,7 @@ Klassen lassen sich kombinieren, zum Beispiel `class="auftrag loesung"`.
 | B | Bildschirm schwarz |
 | T | Countdown auf Folien mit Zeitangabe starten oder anhalten, Shift+T schliesst ihn |
 | D | Download-Leiste (PDF, PPTX, HTML) ein- und ausblenden |
+| W | aktuelle Folie auf der interaktiven Tafel öffnen (neuer Tab) |
 | Alt + Klick | Zoom |
 
 Der Button «Referentenansicht» auf der Startseite öffnet die Präsentation mit einer Auswahl:
@@ -156,6 +157,26 @@ Browser erlauben neue Fenster nur nach einem Klick. Erscheint nichts, Pop-ups f�
 
 Die HTML-Datei (offline) enthält alles: Schrift, Bilder und reveal.js. Sie funktioniert per Doppelklick ohne Internet,
 auch die Referentenansicht. «Kapitel offline (ZIP)» enthält alle HTML-Dateien eines Kapitels.
+
+## Interaktive Tafel
+
+Der Button «Interaktive Tafel» auf der Startseite (oder W in der Präsentation) öffnet `tafel.html?p=...`:
+eine digitale Tafel nach dem Vorbild der fobizz-Tafel, mit den Folien der Präsentation in der Seitenleiste.
+
+| Bereich | Funktion |
+|---|---|
+| Bearbeiten | Text, Notiz, Bild (auch Ctrl+V oder Hineinziehen), Link oder YouTube-Video, Timer, Stoppuhr, Zufallsgenerator, Gruppen, Würfel; Elemente an der Kopfleiste verschieben, am orangen Punkt vergrössern, duplizieren, löschen (Entf) |
+| Folien | Klick in der Seitenleiste legt eine Folie auf die Tafel; im Element mit ‹ › blättern |
+| Zeichnen (Z) | Stift, Textmarker, Radierer, sechs Farben, drei Dicken; schreibt über die ganze Tafel, auch über Folien |
+| Hintergrund | Weiss, kariert, liniert, Punkte, Wandtafel, Dunkelblau |
+| Rückgängig | Ctrl+Z, wiederholen mit Ctrl+Y |
+| Datei | Tafel als JSON-Datei speichern, wieder öffnen (auch per Hineinziehen), Tafel leeren |
+| F | Vollbild |
+
+Die Tafel wird automatisch im Browser gespeichert (eine Tafel pro Präsentation, `tafel.html` ohne `?p=` ist
+eine leere Tafel). Sie liegt nur auf diesem Gerät und in diesem Browser. Zum Weitergeben oder Sichern
+«Datei > Tafel als Datei speichern» verwenden. Anders als bei fobizz gibt es kein Konto, keinen Server und
+kein gemeinsames Bearbeiten in Echtzeit: Die Website ist statisch (GitHub Pages).
 
 ## Dateinamen beim Download
 
@@ -195,6 +216,7 @@ Der Ordner `build/` wird nicht eingecheckt.
 |---|---|
 | Startseite, Viewer | `site/index.html`, `site/praesentation.html?p=k1/l2-...` |
 | Folienlayouts, Countdown, Download-Leiste | `site/js/folien.js`, `site/css/folien.css` |
+| Interaktive Tafel | `site/tafel.html`, `site/js/tafel.js`, `site/css/tafel.css` |
 | reveal.js 5.2.1 mit Markdown, Notes, Zoom | `site/vendor/reveal.js-5.2.1/` (Referentenansicht übersetzt mit `tools/reveal_anpassen.mjs`) |
 | Build und Exporte | `tools/build.mjs`, `tools/lib/` |
 | PowerPoint zu Markdown | `tools/pptx_zu_md.py`, `tools/neue_quellen.py` |

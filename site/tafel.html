@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Interaktive Tafel · Medien und Informatik</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='15' fill='%23ed7d31'/%3E%3Ctext x='16' y='21' font-family='Arial' font-size='13' font-weight='700' fill='white' text-anchor='middle'%3EMI%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/basis.css">
+  <link rel="stylesheet" href="css/tafel.css">
+</head>
+<body class="oberflaeche tafel-seite">
+  <header class="tafel-leiste" id="leiste">
+    <div class="leiste-gruppe">
+      <a class="marke-punkt" href="index.html" title="Zur Startseite">MI</a>
+      <div class="tafel-titel">
+        <strong id="titel">Interaktive Tafel</strong>
+        <a id="zur-praesentation" href="#" hidden>Zur Präsentation</a>
+      </div>
+    </div>
+
+    <div class="leiste-gruppe" role="group" aria-label="Modus">
+      <button type="button" class="t-knopf aktiv" data-modus="bearbeiten" data-icon="zeiger" title="Bearbeiten: Elemente verschieben und ändern (Z)">Bearbeiten</button>
+      <button type="button" class="t-knopf" data-modus="zeichnen" data-icon="stift" title="Zeichnen: auf die ganze Tafel schreiben (Z)">Zeichnen</button>
+    </div>
+
+    <div class="leiste-gruppe nur-bearbeiten" role="group" aria-label="Einfügen">
+      <button type="button" class="t-knopf" data-neu="text" data-icon="text" title="Textfeld">Text</button>
+      <button type="button" class="t-knopf" data-neu="notiz" data-icon="notiz" title="Notizzettel">Notiz</button>
+      <button type="button" class="t-knopf" data-neu="bild" data-icon="bild" title="Bild hochladen (auch Einfügen mit Ctrl+V oder Hineinziehen)">Bild</button>
+      <button type="button" class="t-knopf" data-neu="link" data-icon="link" title="Link oder YouTube-Video">Link</button>
+      <button type="button" class="t-knopf" data-neu="timer" data-icon="timer" title="Timer (Countdown)">Timer</button>
+      <button type="button" class="t-knopf" data-neu="stoppuhr" data-icon="stoppuhr" title="Stoppuhr">Stoppuhr</button>
+      <button type="button" class="t-knopf" data-neu="zufall" data-icon="zufall" title="Zufallsgenerator für Namen">Zufall</button>
+      <button type="button" class="t-knopf" data-neu="gruppen" data-icon="gruppen" title="Gruppen bilden">Gruppen</button>
+      <button type="button" class="t-knopf" data-neu="wuerfel" data-icon="wuerfel" title="Würfel">Würfel</button>
+    </div>
+
+    <div class="leiste-gruppe nur-zeichnen" role="group" aria-label="Zeichenwerkzeuge">
+      <button type="button" class="t-knopf aktiv" data-werkzeug="stift" data-icon="stift" title="Stift">Stift</button>
+      <button type="button" class="t-knopf" data-werkzeug="marker" data-icon="marker" title="Textmarker">Marker</button>
+      <button type="button" class="t-knopf" data-werkzeug="radierer" data-icon="radierer" title="Radierer">Radierer</button>
+      <span class="farben" id="farben"></span>
+      <span class="dicken" id="dicken"></span>
+      <button type="button" class="t-knopf" id="zeichnung-loeschen" data-icon="muell" title="Alle Zeichnungen löschen">Zeichnung</button>
+    </div>
+
+    <div class="leiste-gruppe leiste-rechts">
+      <button type="button" class="t-knopf" id="folien-knopf" data-icon="folien" title="Folien der Präsentation" hidden>Folien</button>
+      <label class="unsichtbar" for="hintergrund">Hintergrund</label>
+      <select id="hintergrund" title="Hintergrund">
+        <option value="weiss">Weiss</option>
+        <option value="kariert">Kariert</option>
+        <option value="liniert">Liniert</option>
+        <option value="punkte">Punkte</option>
+        <option value="gruen">Wandtafel</option>
+        <option value="dunkel">Dunkelblau</option>
+      </select>
+      <button type="button" class="t-knopf nur-icon" id="rueckgaengig" data-icon="zurueck" title="Rückgängig (Ctrl+Z)" aria-label="Rückgängig"></button>
+      <button type="button" class="t-knopf nur-icon" id="wiederholen" data-icon="vor" title="Wiederholen (Ctrl+Y)" aria-label="Wiederholen"></button>
+      <div class="menue">
+        <button type="button" class="t-knopf" id="datei-knopf" data-icon="datei" aria-haspopup="true" aria-expanded="false">Datei</button>
+        <div class="menue-liste" id="datei-menue" hidden>
+          <button type="button" id="speichern">Tafel als Datei speichern</button>
+          <button type="button" id="oeffnen">Tafel aus Datei öffnen</button>
+          <button type="button" id="leeren">Tafel leeren</button>
+        </div>
+      </div>
+      <button type="button" class="t-knopf nur-icon" id="vollbild" data-icon="vollbild" title="Vollbild (F)" aria-label="Vollbild"></button>
+    </div>
+  </header>
+
+  <div class="tafel-haupt">
+    <aside class="folienliste" id="folienliste" hidden>
+      <h2>Folien</h2>
+      <p class="folien-hinweis">Klick legt die Folie auf die Tafel.</p>
+      <ol id="folien"></ol>
+    </aside>
+    <div class="tafel-rahmen" id="rahmen">
+      <div class="tafel hg-weiss" id="tafel">
+        <div class="ebene-elemente" id="elemente"></div>
+        <canvas class="ebene-zeichnung" id="zeichnung" width="3200" height="1800"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="tafel-meldung" id="meldung" role="status" hidden></div>
+  <input type="file" id="bild-datei" accept="image/*" hidden>
+  <input type="file" id="tafel-datei" accept=".json,application/json" hidden>
+  <script src="js/tafel.js"></script>
+</body>
+</html>

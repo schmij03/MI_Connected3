@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*
  * Prueft die gebaute Seite (build/site) automatisch im Browser:
- * Startseite, jede Praesentation, Downloads und Referentenansicht.
+ * Startseite, jede Praesentation, Downloads, Referentenansicht und interaktive Tafel.
  *
  * Aufruf: node tools/pruefen.mjs [--bilder ordner]
  *   --bilder  speichert Bildschirmfotos aller Folien in diesem Ordner
@@ -176,6 +176,42 @@ try {
   } finally {
     await zwei.close();
   }
+
+  console.log("Interaktive Tafel");
+  seitenFehler.length = 0;
+  await seite.goto(BASIS);
+  await seite.waitForSelector(".knopf-tafel");
+  const tafel = await seite.locator(".knopf-tafel").first().getAttribute("href");
+  await seite.goto(BASIS + tafel + "&folie=2");
+  await seite.waitForSelector(".element-folie iframe", { timeout: 20000 });
+  const folienRahmen = seite.frames().find((f) => /tafel=1/.test(f.url()));
+  await folienRahmen.waitForFunction(() => window.Reveal && Reveal.isReady(), null, { timeout: 30000 });
+  pruefe((await folienRahmen.evaluate(() => Reveal.getIndices().h)) === 1, "Folie 2 liegt auf der Tafel");
+  const folienAnzahl = await folienRahmen.evaluate(() => Reveal.getTotalSlides());
+  pruefe((await seite.locator(".folie-eintrag").count()) === folienAnzahl, `Folienliste mit ${folienAnzahl} Folien`);
+  await seite.click('[data-neu="text"]');
+  await seite.keyboard.type("Prüftext");
+  await seite.click('[data-neu="zufall"]');
+  await seite.locator(".element-zufall textarea").fill("Anna\nBen");
+  await seite.locator(".element-zufall .w-haupt").click();
+  await seite.locator(".element-zufall .w-haupt").click();
+  await seite.waitForTimeout(1200);
+  pruefe(["Anna", "Ben"].includes(await seite.locator(".zufall-name").textContent()), "Zufallsgenerator zieht einen Namen");
+  await seite.keyboard.press("z");
+  const flaeche = await seite.locator("#tafel").boundingBox();
+  await seite.mouse.move(flaeche.x + 100, flaeche.y + flaeche.height - 60);
+  await seite.mouse.down();
+  await seite.mouse.move(flaeche.x + 400, flaeche.y + flaeche.height - 80, { steps: 10 });
+  await seite.mouse.up();
+  pruefe((await seite.evaluate(() => MiTafel.zustand().striche.length)) === 1, "Zeichnen mit dem Stift");
+  await seite.keyboard.press("Control+z");
+  pruefe((await seite.evaluate(() => MiTafel.zustand().striche.length)) === 0, "Rückgängig mit Ctrl+Z");
+  await seite.waitForTimeout(600);
+  await seite.reload();
+  await seite.waitForSelector(".element-text");
+  pruefe((await seite.locator(".element-text .textfeld").textContent()) === "Prüftext", "Tafel bleibt nach Neuladen erhalten");
+  if (bilderOrdner) await seite.screenshot({ path: path.join(bilderOrdner, "tafel.png") });
+  pruefe(seitenFehler.length === 0, "Tafel ohne Fehler " + seitenFehler.join(" "));
 
 } catch (e) {
   fehler++;
