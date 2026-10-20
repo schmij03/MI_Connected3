@@ -1,9 +1,7 @@
 # Baut alle Praesentationen mit allen Exporten und veroeffentlicht das Ergebnis
-# im oeffentlichen Pages-Repository (z. B. schmij03/mi-praesentationen).
+# mit GitHub Pages direkt aus diesem Repository.
 #
-# Benoetigt im Quell-Repository (Settings > Secrets and variables > Actions):
-#   Secret   PAGES_DEPLOY_KEY  privater Teil des Deploy Keys (Schreibrecht im Pages-Repository)
-#   Variable PAGES_REPOSITORY  optional, Standard: <eigener Benutzer>/mi-praesentationen
+# Einmalig einrichten: Settings > Pages > Build and deployment > Source: "GitHub Actions".
 name: Website bauen
 
 on:
@@ -15,6 +13,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: website-${{ github.ref }}
@@ -77,16 +77,20 @@ jobs:
           path: build/exporte
           retention-days: 7
 
-      - name: Ins Pages-Repository uebertragen
+      - name: Website fuer GitHub Pages bereitstellen
         if: env.VEROEFFENTLICHEN == 'true'
-        uses: peaceiris/actions-gh-pages@v4
+        uses: actions/upload-pages-artifact@v3
         with:
-          deploy_key: ${{ secrets.PAGES_DEPLOY_KEY }}
-          external_repository: ${{ vars.PAGES_REPOSITORY || format('{0}/mi-praesentationen', github.repository_owner) }}
-          publish_branch: main
-          publish_dir: build/site
-          force_orphan: true
-          enable_jekyll: false
-          user_name: "github-actions[bot]"
-          user_email: "41898282+github-actions[bot]@users.noreply.github.com"
-          commit_message: "Website aktualisiert"
+          path: build/site
+
+  veroeffentlichen:
+    needs: bauen
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - name: Auf GitHub Pages veroeffentlichen
+        id: pages
+        uses: actions/deploy-pages@v4

@@ -7,12 +7,12 @@ PPTX und eigenständige HTML-Datei herunterladen.
 ## So funktioniert es
 
 ```
-Dieses Repository (privat)                         Pages-Repository (öffentlich)
-quellen/   Original-PowerPoint                     index.html  Startseite
-inhalte/   Markdown, Bilder, kapitel.json  ──────► praesentation.html, css/, js/
-site/      Startseite, Viewer, Design     Build    daten/      Präsentationen und Downloads
-tools/     Skripte                       (GitHub   robots.txt, .nojekyll
-                                          Actions)
+Dieses Repository (öffentlich)                        GitHub Pages
+quellen/   Original-PowerPoint                        index.html          Startseite
+inhalte/   Markdown, Bilder, kapitel.json  ────────►  praesentation.html  Viewer
+site/      Startseite, Viewer, Design      Build      daten/              Präsentationen und Downloads
+tools/     Skripte                         (GitHub    css/, js/, fonts/, vendor/
+                                            Actions)
 ```
 
 Bei jedem Push auf den Hauptbranch läuft `.github/workflows/build.yml`:
@@ -20,30 +20,20 @@ Bei jedem Push auf den Hauptbranch läuft `.github/workflows/build.yml`:
 1. Neue PowerPoint-Dateien in `quellen/` werden automatisch in Markdown umgewandelt.
 2. Für jede Präsentation entstehen HTML (offline), PDF, PDF mit Notizen und PPTX, pro Kapitel ein ZIP.
 3. Ein Browsertest prüft Startseite, alle Präsentationen und die Downloads.
-4. Das Ergebnis geht mit dem Deploy Key ins Pages-Repository.
+4. GitHub Pages veröffentlicht das Ergebnis direkt aus diesem Repository.
 
-Die Website ist öffentlich: Wer die Adresse kennt, kann alle Präsentationen ansehen und herunterladen,
-auch die Original-PowerPoint-Dateien. `robots.txt` und `noindex` halten Suchmaschinen fern, sind aber kein Schutz.
-Die Arbeitsdateien in diesem Repository (`quellen/`, `inhalte/`) bleiben privat.
+Alles ist öffentlich: dieses Repository mit den Original-PowerPoint-Dateien, den Notizen und den Bildern
+genauso wie die Website. `robots.txt` und `noindex` halten Suchmaschinen fern, sind aber kein Schutz.
+Bilder aus dem Lehrmittel connected 3 (© Lehrmittelverlag Zürich) und andere geschützte Bilder deshalb nur
+einbinden, wenn sie öffentlich gezeigt werden dürfen.
 
 ## Einrichtung (einmalig)
 
-1. **Pages-Repository anlegen:** Auf GitHub ein neues, **öffentliches** Repository `mi-praesentationen` erstellen
-   (ohne README). Unter *Settings > Pages* als Quelle *Deploy from a branch*, Branch `main`, Ordner `/ (root)` wählen.
-   Das geht erst nach dem ersten Build, wenn der Branch `main` existiert.
-2. **Deploy Key erzeugen** (im Terminal):
-   ```
-   ssh-keygen -t ed25519 -C "mi-praesentationen" -f pages_key -N ""
-   ```
-   - Im **Pages-Repository** unter *Settings > Deploy keys > Add deploy key* den Inhalt von `pages_key.pub`
-     einfügen und **Allow write access** ankreuzen.
-   - In **diesem Repository** unter *Settings > Secrets and variables > Actions > New repository secret*
-     ein Secret `PAGES_DEPLOY_KEY` mit dem Inhalt von `pages_key` (ohne `.pub`) anlegen.
-   - Danach beide Dateien löschen.
-3. Heisst das Pages-Repository anders als `mi-praesentationen`, unter *Settings > Secrets and variables >
-   Actions > Variables* eine Variable `PAGES_REPOSITORY` mit `benutzer/name` anlegen.
-4. Einen Commit auf den Hauptbranch pushen oder den Workflow von Hand starten. Nach etwa drei Minuten ist die
-   Seite unter `https://<benutzer>.github.io/mi-praesentationen/` erreichbar.
+Settings → Pages → Build and deployment → Source: «GitHub Actions».
+
+Danach einen Commit auf den Hauptbranch pushen oder unter *Actions > Website bauen > Run workflow* starten.
+Nach etwa drei Minuten ist die Seite unter `https://schmij03.github.io/MI_Connected3/` erreichbar.
+Secrets oder ein zweites Repository braucht es nicht.
 
 ## Neue Präsentation ergänzen
 
@@ -199,5 +189,5 @@ Der Ordner `build/` wird nicht eingecheckt.
 Das PPTX wird aus der Darstellung im Browser erzeugt: Jede Folie wird ausgemessen und mit echten Textfeldern,
 Tabellen und Bildern nachgebaut, damit sie in PowerPoint bearbeitbar bleibt.
 
-Die Exporte des Workflows (Artefakt «exporte») sind nur für Personen mit Zugriff auf dieses Repository sichtbar
-und werden nach 7 Tagen gelöscht.
+Die Exporte jedes Workflow-Laufs liegen zusätzlich 7 Tage lang als Artefakt «exporte» unter *Actions*,
+auch für Branches, die nicht veröffentlicht werden.
